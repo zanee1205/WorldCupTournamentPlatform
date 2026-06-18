@@ -1,0 +1,42 @@
+.flagLabel {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.flagFrame {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.02);
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.04) inset;
+    flex: 0 0 auto;
+}
+
+.flag {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.flagPlaceholder {
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.label {
+    color: #fff;
+    font-size: 14px;
+}
+
+.flagEmoji {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+}

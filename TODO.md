@@ -1,0 +1,12 @@
+- [x] Implement fetch+transform for openfootball worldcup.json 2026 (server/src/fetch/worldcup2026.ts)
+- [ ] Replace seed matches (schedule/raw-schedule) with fetched fixtures in server/src/store.ts
+- [ ] Add hourly refresh (scheduler) to re-fetch and upsert metadata + auto-sync results
+- [ ] Remove manual result update endpoint (/api/matches/:id/result) from server + frontend
+- [ ] Remove manual teams update endpoint (/api/matches/:id/teams) from server + remove UI team editor
+- [x] Extend result types to include halftime score + goal scorers & minutes (server/src/types/resultInput.ts)
+- [ ] Update MatchDrawer UI to display halftime score and goal scorers (remove result form)
+- [ ] Update transformer to parse scorers/minutes from fetched JSON (from worldcup fetch)
+- [ ] Update server scoring/ledger if needed (may already work)
+- [ ] Update src/api.ts (remove saveResult/saveTeams) and any callers
+- [ ] Run typecheck/build and manually verify dashboard/match drawer rendering
+

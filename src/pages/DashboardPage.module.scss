@@ -1,0 +1,361 @@
+.textMuted {
+    color: #64748b;
+}
+
+.dashboardPage {
+    :global {
+        .ant-card {
+            border-radius: 16px;
+        }
+    }
+}
+
+
+.userPointCard {
+    background: rgba(27, 55, 196, 0.08) !important;
+    border: 0.5px solid rgba(255, 255, 255, 0.08) !important;
+
+
+    :global {
+        .ant-card-head {
+            background: transparent !important;
+            border-bottom: 0.5px solid rgba(255, 255, 255, 0.9) !important;
+
+            .ant-card-head-title {
+                color: rgba(255, 255, 255, 0.85) !important;
+            }
+        }
+
+        .ant-card-body {
+            background: transparent !important;
+        }
+
+        .ant-statistic-content-value-int {
+            color: rgba(183, 195, 52, 0.89) !important;
+            font-size: 25px !important;
+            font-weight: 700 !important;
+        }
+    }
+}
+
+.predictedMatchCard {
+    background: rgba(27, 55, 196, 0.08) !important;
+    border: 0.5px solid rgba(255, 255, 255, 0.08) !important;
+
+
+    :global {
+        .ant-card-head {
+            background: transparent !important;
+            border-bottom: 0.5px solid rgba(255, 255, 255, 0.9) !important;
+
+            .ant-card-head-title {
+                color: rgba(255, 255, 255, 0.85) !important;
+            }
+        }
+
+        .ant-card-body {
+            background: transparent !important;
+        }
+
+        .ant-statistic-content-value {
+            color: rgba(168, 160, 221, 0.89) !important;
+            font-size: 25px !important;
+            font-weight: 700 !important;
+        }
+    }
+}
+
+.resultMatchCard {
+    background: rgba(27, 55, 196, 0.08) !important;
+    border: 0.5px solid rgba(255, 255, 255, 0.08) !important;
+
+
+    :global {
+        .ant-card-head {
+            background: transparent !important;
+            border-bottom: 0.5px solid rgba(255, 255, 255, 0.9) !important;
+
+            .ant-card-head-title {
+                color: rgba(255, 255, 255, 0.85) !important;
+            }
+        }
+
+        .ant-card-body {
+            background: transparent !important;
+        }
+
+        .ant-statistic-content-value {
+            color: rgba(49, 227, 243, 0.89) !important;
+            font-size: 25px !important;
+            font-weight: 700 !important;
+        }
+    }
+}
+
+.summaryPointCard {
+    background: rgba(27, 55, 196, 0.08) !important;
+    border: 0.5px solid rgba(255, 255, 255, 0.08) !important;
+    margin-bottom: 25px !important;
+
+
+    :global {
+        .ant-card-head {
+            background: transparent !important;
+            border-bottom: 0.5px solid rgba(255, 255, 255, 0.9) !important;
+
+            .ant-card-head-title {
+                color: rgba(255, 255, 255, 0.85) !important;
+            }
+        }
+
+        .ant-card-body {
+            background: transparent !important;
+        }
+
+        .ant-statistic-content-value {
+            color: rgba(49, 227, 243, 0.89) !important;
+            font-size: 25px !important;
+            font-weight: 700 !important;
+        }
+    }
+
+    .pointDisplay {
+        color: rgba(255, 255, 255, 0.9) !important;
+        margin-bottom: 0 !important;
+        margin-top: 10px !important;
+        font-size: 16px !important;
+        font-weight: 500 !important;
+    }
+}
+
+.scoreHistoryCard {
+    background: rgba(27, 55, 196, 0.08) !important;
+    border: 0.5px solid rgba(255, 255, 255, 0.08) !important;
+    margin-bottom: 25px !important;
+
+    .totalPointsCell {
+        color: rgba(49, 227, 243, 0.89) !important;
+        font-size: 16px !important;
+        font-weight: 700 !important;
+    }
+
+    :global {
+        .ant-card-head {
+            background: transparent !important;
+            border-bottom: 0.5px solid rgba(255, 255, 255, 0.6) !important;
+
+            .ant-card-head-title {
+                color: rgba(255, 255, 255, 0.85) !important;
+            }
+        }
+
+        .ant-card-body {
+            background: transparent !important;
+            padding: 0 !important;
+        }
+
+        .ant-table {
+            background: transparent !important;
+        }
+
+        .ant-table-thead>tr>th {
+            background: rgba(27, 55, 196, 0.12) !important;
+            color: rgba(255, 255, 255, 0.85) !important;
+            border-bottom: 0.5px solid rgba(255, 255, 255, 0.3) !important;
+            font-weight: 600;
+        }
+
+        .ant-table-tbody>tr>td {
+            background: transparent !important;
+            color: rgba(255, 255, 255, 0.75) !important;
+            border-bottom: 0.5px solid rgba(255, 255, 255, 0.08) !important;
+        }
+
+        .ant-table-tbody>tr:nth-child(even)>td {
+            background: rgba(255, 255, 255, 0.02) !important;
+        }
+
+        .ant-table-tbody>tr:hover>td {
+            background: rgba(255, 255, 255, 0.05) !important;
+        }
+
+        .ant-pagination {
+
+            .ant-pagination-item,
+            .ant-pagination-prev,
+            .ant-pagination-next {
+                background: transparent !important;
+                border-color: rgba(255, 255, 255, 0.15) !important;
+
+                a {
+                    color: rgba(255, 255, 255, 0.75) !important;
+                }
+            }
+
+            .ant-pagination-item-active {
+                border-color: rgba(49, 227, 243, 0.89) !important;
+
+                a {
+                    color: rgba(49, 227, 243, 0.89) !important;
+                }
+            }
+        }
+
+        .ant-table-placeholder,
+        .ant-empty-description {
+            color: rgba(255, 255, 255, 0.5) !important;
+        }
+    }
+}
+
+.historyStatsCard {
+    background: rgba(27, 55, 196, 0.08) !important;
+    border: 0.5px solid rgba(255, 255, 255, 0.08) !important;
+    margin-bottom: 16px !important;
+
+    :global {
+        .ant-card-body {
+            background: transparent !important;
+            padding: 0 !important;
+        }
+    }
+
+    .statsGrid {
+        display: flex;
+        gap: 28px;
+        flex-wrap: wrap;
+        padding: 20px;
+    }
+
+    .statsPanel {
+        flex: 1 1 320px;
+        min-width: 260px;
+    }
+
+    .statsPanelTitle {
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 15px;
+        font-weight: 500;
+        margin-bottom: 16px;
+    }
+
+    .pointsProgress {
+        margin-bottom: 18px;
+
+        :global {
+            .ant-progress-inner {
+                background-color: rgba(255, 255, 255, 0.06) !important;
+            }
+
+            .ant-progress-bg {
+                border-radius: 8px !important;
+                height: 14px !important;
+            }
+        }
+    }
+
+    .legendRow {
+        display: flex;
+        gap: 18px;
+        flex-wrap: wrap;
+        margin-top: 14px;
+        font-size: 13px;
+        color: rgba(255, 255, 255, 0.8);
+
+        b {
+            color: #fff;
+        }
+    }
+
+    .stackBar {
+        display: flex;
+        height: 14px;
+        border-radius: 8px;
+        overflow: hidden;
+        background: rgba(255, 255, 255, 0.04);
+    }
+
+    .segmentExact {
+        background: #10b981;
+    }
+
+    .segmentTrend {
+        background: #60a5fa;
+    }
+
+    .segmentWrong {
+        background: #f97316;
+    }
+
+    .legendDotExact,
+    .legendDotTrend,
+    .legendDotWrong {
+        display: inline-block;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        margin-right: 6px;
+        vertical-align: middle;
+    }
+
+    .legendDotExact {
+        background: #10b981;
+    }
+
+    .legendDotTrend {
+        background: #60a5fa;
+    }
+
+    .legendDotWrong {
+        background: #f97316;
+    }
+
+    .chartSummary {
+        display: flex;
+        gap: 12px;
+        margin-top: 12px;
+        align-items: center;
+    }
+
+    .chartStatBox {
+        background: rgba(255, 255, 255, 0.03);
+        padding: 8px 12px;
+        border-radius: 8px;
+        min-width: 84px;
+        text-align: center;
+    }
+
+    .statValue {
+        color: #60a5fa;
+        font-weight: 800;
+        font-size: 20px;
+    }
+
+    .statLabel {
+        color: rgba(255, 255, 255, 0.75);
+        font-size: 12px;
+    }
+
+    @media (max-width: 768px) {
+        .statsGrid {
+            flex-direction: column;
+            gap: 12px;
+            padding: 12px;
+        }
+
+        .statsPanel {
+            min-width: 100%;
+        }
+
+        .chartSummary {
+            flex-direction: column;
+            gap: 8px;
+            align-items: flex-start;
+        }
+
+        .legendRow {
+            font-size: 13px;
+            gap: 8px;
+        }
+    }
+}

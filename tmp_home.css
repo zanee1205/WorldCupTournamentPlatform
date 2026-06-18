@@ -1,0 +1,235 @@
+.appContent {
+  background: linear-gradient(135deg, #0f0f14 0%, #12101e 50%, #1a1428 100%) !important;
+  min-height: 100vh;
+  padding: 24px;
+}
+
+.pageWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.calendarItem {
+  cursor: pointer;
+}
+.calendarItem:hover {
+  background: #d6e4ff;
+}
+.calendarItem .calendarLink {
+  max-width: 150px;
+  display: block;
+  width: 100%;
+  min-height: 36px;
+  border: 0;
+  background: #f0f5ff;
+  border-left: 3px solid #003886;
+  border-radius: 10px;
+  padding: 6px 8px;
+  text-align: left;
+  cursor: pointer;
+  overflow: hidden;
+}
+.calendarItem .calendarLink:hover {
+  background: #d6e4ff;
+}
+.calendarItem .calendarTitle {
+  font-size: 11px;
+  font-weight: 700;
+  color: #1d4ed8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.calendarItem .calendarMeta {
+  font-size: 10px;
+  color: #475569;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.calendarCell {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+.calendarCell .calendarDayBody {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  overflow: hidden;
+}
+
+.heroCard {
+  background: linear-gradient(135deg, rgba(30, 27, 58, 0.6), rgba(26, 32, 64, 0.6));
+  border: 0.5px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 24px;
+  margin-top: 15px;
+}
+
+.scoreValue {
+  font-size: 48px;
+  font-weight: 700;
+  line-height: 1;
+  margin-bottom: 8px;
+  color: #a5b4fc;
+}
+
+.textMuted {
+  color: #64748b;
+}
+
+.calendarCard :global .ant-card {
+  background: rgba(255, 255, 255, 0.04) !important;
+  border: 0.5px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 12px !important;
+  color: #fff !important;
+}
+.calendarCard :global .ant-card-head {
+  background: transparent !important;
+  border-bottom: 0.5px solid rgba(255, 255, 255, 0.08) !important;
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+.calendarCard :global .ant-card-head-title {
+  color: rgba(255, 255, 255, 0.85) !important;
+  font-size: 14px;
+  font-weight: 500;
+}
+.calendarCard :global .ant-typography,
+.calendarCard :global h1,
+.calendarCard :global h2,
+.calendarCard :global h3,
+.calendarCard :global p {
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+.calendarCard :global .ant-tag {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+.calendarCard :global .ant-progress-text {
+  color: rgba(255, 255, 255, 0.6) !important;
+}
+.calendarCard :global .ant-list-item {
+  border-block-end-color: rgba(255, 255, 255, 0.06) !important;
+  color: rgba(255, 255, 255, 0.75) !important;
+}
+.calendarCard :global .ant-list-item-meta-title {
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+.calendarCard :global p.ant-typography {
+  color: rgba(255, 255, 255, 0.6) !important;
+}
+.calendarCard :global .ant-card-body {
+  padding: 12px;
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+.calendarCard :global .ant-picker-calendar {
+  background: transparent;
+}
+.calendarCard :global .ant-picker-calendar-header {
+  padding: 0 0 12px;
+  margin-bottom: 4px;
+  border-bottom: 1px solid #e2e8f0;
+}
+.calendarCard :global .ant-picker-calendar-mini .ant-picker-panel {
+  border: 0;
+}
+.calendarCard :global .ant-picker-calendar-mini .ant-picker-content th {
+  padding: 10px 0;
+  font-size: 12px;
+  color: #64748b;
+}
+.calendarCard :global .ant-picker-cell {
+  padding: 0 !important;
+}
+.calendarCard :global .ant-picker-cell-inner {
+  padding: 0 !important;
+}
+.calendarCard :global .ant-picker-calendar-date {
+  margin: 0;
+  padding: 6px;
+  border-radius: 0;
+  min-height: 160px;
+  height: 100%;
+  transition: background 0.2s ease, box-shadow 0.2s ease;
+}
+.calendarCard :global .ant-picker-content {
+  border-collapse: collapse;
+}
+.calendarCard :global .ant-picker-content th,
+.calendarCard :global .ant-picker-content td {
+  border: 1px solid #e2e8f0;
+}
+.calendarCard :global .ant-picker-cell-in-view.ant-picker-cell-today {
+  outline: 2px solid #1677ff;
+  outline-offset: -1px;
+}
+.calendarCard :global .ant-picker-cell-in-view.ant-picker-cell-today .ant-picker-calendar-date {
+  box-shadow: none;
+}
+.calendarCard :global .ant-picker-cell-in-view.ant-picker-cell-today .ant-picker-cell-inner::before {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+.calendarCard :global .ant-picker-cell-in-view.ant-picker-cell-selected {
+  outline: 2px solid #91caff;
+  outline-offset: -1px;
+}
+.calendarCard :global .ant-picker-cell-in-view.ant-picker-cell-selected .ant-picker-cell-inner {
+  background: transparent !important;
+  color: inherit !important;
+}
+.calendarCard :global .ant-picker-cell-in-view.ant-picker-cell-selected .ant-picker-calendar-date,
+.calendarCard :global .ant-picker-cell-in-view.ant-picker-cell-selected .ant-picker-calendar-date:hover,
+.calendarCard :global .ant-picker-cell-in-view.ant-picker-cell-selected .ant-picker-calendar-date-value {
+  background: transparent;
+  color: inherit;
+  outline: none;
+  box-shadow: none;
+}
+@media (max-width: 768px) {
+  .calendarCard :global .ant-picker-calendar-date {
+    min-height: 130px;
+    padding: 6px;
+  }
+}
+
+.progressCard {
+  background: rgba(27, 55, 196, 0.08) !important;
+  border: 0.5px solid rgba(255, 255, 255, 0.08) !important;
+}
+.progressCard :global .ant-card-head {
+  background: transparent !important;
+  border-bottom: 0.5px solid rgba(255, 255, 255, 0.08) !important;
+}
+.progressCard :global .ant-card-head .ant-card-head-title {
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+.progressCard :global .ant-card-body {
+  background: transparent !important;
+}
+.progressCard :global .ant-progress-text {
+  color: rgb(123, 117, 209) !important;
+}
+
+.progressMeta {
+  margin-top: 16px;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.progressCount {
+  color: #a5b4fc;
+  font-weight: 600;
+}
+
+.progressTotal {
+  color: rgba(255, 255, 255, 0.8) !important;
+}
+
+/*# sourceMappingURL=tmp_home.css.map */

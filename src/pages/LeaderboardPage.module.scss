@@ -1,0 +1,58 @@
+.description {
+  color: rgba(255, 255, 255, 0.9);
+  margin-bottom: 16px;
+}
+
+.table {
+  :global {
+    .ant-table-wrapper,
+    .ant-table,
+    .ant-table-container,
+    .ant-table-content {
+      background: transparent !important;
+    }
+
+    .ant-table-thead tr th,
+    .ant-table-thead tr td {
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.25), rgba(139, 92, 246, 0.25)) !important;
+      color: #fff !important;
+      border-color: rgba(255, 255, 255, 0.08) !important;
+    }
+
+    .ant-table-tbody tr td {
+      background: transparent !important;
+      color: rgba(255, 255, 255, 0.8) !important;
+      border-color: rgba(255, 255, 255, 0.05) !important;
+    }
+
+    .ant-table-tbody tr:hover td {
+      background: rgba(99, 102, 241, 0.08) !important;
+    }
+  }
+}
+
+.groupCard {
+  background: rgba(255, 255, 255, 0.03) !important;
+  border: 0.5px solid rgba(99, 102, 241, 0.2) !important;
+  border-radius: 12px !important;
+
+  :global {
+    .ant-card-head {
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(139, 92, 246, 0.2)) !important;
+      border-bottom: 0.5px solid rgba(99, 102, 241, 0.25) !important;
+
+      .ant-card-head-title {
+        color: #a5b4fc !important;
+        font-weight: 600;
+      }
+    }
+
+    .ant-card-body {
+      background: transparent !important;
+    }
+
+    th.ant-table-cell {
+      color: #ffffff !important;
+    }
+  }
+}

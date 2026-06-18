@@ -1,0 +1,233 @@
+.resultMatchCard {
+    background: rgba(27, 55, 196, 0.08) !important;
+    border: 0.5px solid rgba(255, 255, 255, 0.08) !important;
+    margin-bottom: 25px !important;
+    margin-top: 25px !important;
+
+
+    :global {
+        .ant-card-head {
+            background: transparent !important;
+            border-bottom: 0.5px solid rgba(255, 255, 255, 0.9) !important;
+
+            .ant-card-head-title {
+                color: rgba(255, 255, 255, 0.85) !important;
+            }
+        }
+
+        .ant-card-body {
+            background: transparent !important;
+        }
+
+        .ant-statistic-content-value {
+            color: rgba(255, 255, 255, 0.89) !important;
+            font-size: 20px !important;
+            border-top: 1.5px solid rgba(255, 255, 255, 0.5) !important;
+
+        }
+    }
+
+    .pointDisplay {
+        color: rgba(255, 255, 255, 0.9) !important;
+        margin-bottom: 0 !important;
+        margin-top: 10px !important;
+        font-size: 16px !important;
+        font-weight: 500 !important;
+    }
+}
+
+.notificationCard {
+    background: rgba(27, 55, 196, 0.08) !important;
+    border: 0.5px solid rgba(255, 255, 255, 0.08) !important;
+    margin-bottom: 25px !important;
+    margin-top: 25px !important;
+
+
+    :global {
+        .ant-card-head {
+            background: transparent !important;
+            border-bottom: 0.5px solid rgba(255, 255, 255, 0.9) !important;
+
+            .ant-card-head-title {
+                color: rgba(255, 255, 255, 0.85) !important;
+            }
+        }
+
+        .ant-card-body {
+            background: transparent !important;
+        }
+
+        .ant-statistic-content-value {
+            color: rgba(49, 227, 243, 0.89) !important;
+            font-size: 25px !important;
+            font-weight: 700 !important;
+        }
+    }
+
+    .pointDisplay {
+        color: rgba(255, 255, 255, 0.9) !important;
+        margin-bottom: 0 !important;
+        margin-top: 10px !important;
+        font-size: 14px !important;
+
+    }
+}
+
+.tableCard {
+    background: rgba(27, 55, 196, 0.08) !important;
+    border: 0.5px solid rgba(255, 255, 255, 0.08) !important;
+    margin-bottom: 25px !important;
+
+    :global {
+        .ant-card-body {
+            background: transparent !important;
+            padding: 0 !important;
+
+        }
+        .ant-table {
+            background: transparent !important;
+        }
+
+        .ant-table-thead > tr > th {
+            background: rgba(27, 55, 196, 0.12) !important;
+            color: rgba(255, 255, 255, 0.85) !important;
+            border-bottom: 0.5px solid rgba(255, 255, 255, 0.15) !important;
+            font-weight: 600;
+        }
+
+        .ant-table-tbody > tr > td {
+            background: transparent !important;
+            color: rgba(255, 255, 255, 0.75) !important;
+            border-bottom: 0.5px solid rgba(255, 255, 255, 0.08) !important;
+        }
+
+        .ant-table-tbody > tr:nth-child(even) > td {
+            background: rgba(255, 255, 255, 0.02) !important;
+        }
+
+        .ant-table-tbody > tr:hover > td {
+            background: rgba(255, 255, 255, 0.05) !important;
+        }
+
+        .ant-table-cell-row-hover {
+            background: rgba(255, 255, 255, 0.05) !important;
+        }
+
+        .ant-pagination {
+            .ant-pagination-item,
+            .ant-pagination-prev,
+            .ant-pagination-next {
+                background: transparent !important;
+                border-color: rgba(255, 255, 255, 0.15) !important;
+
+                a {
+                    color: rgba(255, 255, 255, 0.75) !important;
+                }
+            }
+
+            .ant-pagination-item-active {
+                border-color: rgba(49, 227, 243, 0.89) !important;
+
+                a {
+                    color: rgba(49, 227, 243, 0.89) !important;
+                }
+            }
+        }
+
+        .ant-table-placeholder,
+        .ant-empty-description {
+            color: rgba(255, 255, 255, 0.5) !important;
+        }
+    }
+}
+
+.viewDetailBtn {
+    background: linear-gradient(135deg, #6366f1, #8b5cf6) !important;
+    border: none !important;
+    border-radius: 9px !important;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+
+    &::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 60%;
+      height: 100%;
+      background: linear-gradient(120deg,
+          transparent 0%,
+          rgba(255, 255, 255, 0.35) 50%,
+          transparent 100%);
+      transition: left 0.5s ease;
+    }
+
+    &:hover {
+      background: linear-gradient(135deg, #818cf8, #a78bfa) !important;
+      box-shadow: 0 4px 15px rgba(99, 102, 241, 0.5);
+
+      &::after {
+        left: 150%;
+      }
+    }
+  }
+
+  .searchBar {
+    :global {
+        .ant-input-affix-wrapper {
+            background: rgba(255, 255, 255, 0.05) !important;
+            border: 0.5px solid rgba(255, 255, 255, 0.15) !important;
+            border-radius: 8px !important;
+
+            input.ant-input {
+                background: transparent !important;
+                color: rgba(255, 255, 255, 0.85) !important;
+
+                &::placeholder {
+                    color: rgba(255, 255, 255, 0.35) !important;
+                }
+            }
+
+            &:hover {
+                border-color: rgba(99, 102, 241, 0.5) !important;
+            }
+        }
+
+        .ant-input-affix-wrapper-focused,
+        .ant-input-affix-wrapper:focus-within {
+            border-color: rgba(99, 102, 241, 0.7) !important;
+            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.15) !important;
+        }
+
+        // icon search (mặc định không có enterButton)
+        .ant-input-suffix .anticon {
+            color: rgba(255, 255, 255, 0.45) !important;
+
+            &:hover {
+                color: rgba(255, 255, 255, 0.8) !important;
+            }
+        }
+
+        .ant-input-clear-icon {
+            color: rgba(255, 255, 255, 0.4) !important;
+
+            &:hover {
+                color: rgba(255, 255, 255, 0.7) !important;
+            }
+        }
+
+        .ant-input-group-addon {
+            background: transparent !important;
+        }
+
+        .ant-input-search-button {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6) !important;
+            border-color: transparent !important;
+
+            .anticon {
+                color: #fff !important;
+            }
+        }
+    }
+}

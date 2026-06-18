@@ -21,7 +21,21 @@ export function createApp(repository: TournamentRepository) {
     origin(origin, callback) {
       // allow non-browser requests (no Origin header)
       if (!origin) return callback(null, true);
+
+      // Direct match against the configured list
       if (allowedOrigins.includes(origin)) return callback(null, true);
+
+      // Allow wildcard entry
+      if (allowedOrigins.includes('*')) return callback(null, true);
+
+      // Allow any Vercel preview domain (e.g. *.vercel.app) so preview deployments can call the API.
+      try {
+        const url = new URL(origin);
+        if (url.hostname.endsWith('.vercel.app')) return callback(null, true);
+      } catch (err) {
+        // ignore parse errors and fall through to rejection
+      }
+
       return callback(new Error('Not allowed by CORS'));
     },
     credentials: true,

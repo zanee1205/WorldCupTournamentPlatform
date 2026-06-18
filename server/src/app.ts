@@ -12,7 +12,10 @@ export function createApp(repository: TournamentRepository) {
     return typeof value === 'number' && Number.isInteger(value) && value >= 0 && value <= 99;
   }
 
-  app.use(cors());
+  app.use(cors({
+    origin: ['https:/https://world-cup-tournament-platform.vercel.app/', 'http://localhost:5173'],
+    credentials: true,
+  }));
   app.use(express.json());
 
   app.get('/api/health', (_request, response) => {

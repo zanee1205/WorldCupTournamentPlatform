@@ -6,6 +6,7 @@ import { formatDateTime } from '../../shared/date';
 import { getStageScore } from '../../shared/scoring';
 import styles from './MatchDrawer.module.scss';
 import { CountryFlag } from './CountryFlag';
+import { apiPath } from '../api.ts';
 
 import type { TournamentMatch } from '../../server/src/types/tournamentMatch';
 import type { MatchPrediction } from '../../server/src/types/predictionInput';
@@ -28,7 +29,7 @@ export function MatchDrawer({ open, match, readOnly, onClose, onSavePrediction }
     if (!aiQuestion.trim() || !match) return;
     setAiLoading(true);
     try {
-      const response = await fetch('/api/ai/ask', {
+      const response = await fetch(apiPath('/api/ai/ask'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

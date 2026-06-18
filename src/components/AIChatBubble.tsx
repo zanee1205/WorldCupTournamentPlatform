@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { Button, Input, Spin, Typography, Card } from "antd";
 import { CommentOutlined, CloseOutlined, RobotOutlined, SendOutlined } from "@ant-design/icons";
 import styles from './AIChatBubble.module.scss';
+import { apiPath } from '../api.ts';
 
 type ChatMessage = { role: 'user' | 'ai'; text: string };
 
@@ -27,7 +28,7 @@ export function AIChatBubble() {
         setLoading(true);
 
         try {
-            const response = await fetch('/api/ai/ask', {
+            const response = await fetch(apiPath('/api/ai/ask'), {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ question: useMsg }),

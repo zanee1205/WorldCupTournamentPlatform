@@ -5,8 +5,17 @@ import type { TournamentMatch } from '../server/src/types/tournamentMatch.ts';
 import type { MatchPrediction } from '../server/src/types/predictionInput.ts';
 import type { MatchResult } from '../server/src/types/resultInput.ts';
 
+// Read API base from Vite env. If not provided, fall back to relative `/api`.
+export const API_BASE: string = (import.meta.env.VITE_API_URL as string) ?? '';
+
+export function apiPath(path: string) {
+  if (!path.startsWith('/')) path = `/${path}`;
+  if (!API_BASE) return path;
+  return `${API_BASE.replace(/\/$/, '')}${path}`;
+}
+
 const http = axios.create({
-  baseURL: '/api',
+  baseURL: API_BASE ? `${API_BASE.replace(/\/$/, '')}/api` : '/api',
   headers: {
     'Content-Type': 'application/json',
   },

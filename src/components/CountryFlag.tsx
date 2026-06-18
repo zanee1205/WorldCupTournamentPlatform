@@ -1,6 +1,7 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import styles from './CountryFlag.module.scss';
 import { COUNTRY_FLAG_CODE } from '../../server/src/mappings/countryFlagCode.ts';
+import { apiPath } from '../api.ts';
 
 type CountryFlagProps = {
     name?: string | null;
@@ -144,11 +145,11 @@ export function CountryFlag({ name, size, showName = true, className }: CountryF
         if (imgSrc.startsWith('/flags/')) {
             // local public SVG missing or blocked — try proxy
             if (code) {
-                setImgSrc(`/api/flag/${code}?size=${displayWidth}`);
+                setImgSrc(apiPath(`/api/flag/${code}?size=${displayWidth}`));
                 return;
             }
         }
-        if (imgSrc.startsWith('/api/flag')) {
+        if (imgSrc.includes('/api/flag')) {
             // proxy failed — try CDN PNG
             if (code) {
                 setImgSrc(`https://flagcdn.com/w${displayWidth}/${code}.png`);

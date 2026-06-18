@@ -13,6 +13,13 @@ export function setCorsHeaders(req: any, res: any) {
         res.setHeader('Access-Control-Allow-Credentials', 'true');
     }
 
+    // Prevent API responses from being cached by browsers or intermediate proxies.
+    // This avoids clients receiving HTTP 304 Not Modified for data endpoints
+    // after a state-changing request (e.g., PATCH to update a prediction).
+    res.setHeader('Cache-Control', 'no-store');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+
     res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PATCH,OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type,Authorization');
 }

@@ -12,8 +12,18 @@ export function createApp(repository: TournamentRepository) {
     return typeof value === 'number' && Number.isInteger(value) && value >= 0 && value <= 99;
   }
 
+  // Configure allowed origins via environment variable for production flexibility.
+  // Example: ALLOWED_ORIGINS="https://world-cup-tournament-platform.vercel.app,http://localhost:5173"
+  const allowedOriginsEnv = String(process.env.ALLOWED_ORIGINS || 'https://world-cup-tournament-platform.vercel.app,http://localhost:5173');
+  const allowedOrigins = allowedOriginsEnv.split(',').map((s) => s.trim()).filter(Boolean);
+
   app.use(cors({
-    origin: ['https:/https://world-cup-tournament-platform.vercel.app/', 'http://localhost:5173'],
+    origin(origin, callback) {
+      // allow non-browser requests (no Origin header)
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.includes(origin)) return callback(null, true);
+      return callback(new Error('Not allowed by CORS'));
+    },
     credentials: true,
   }));
   app.use(express.json());

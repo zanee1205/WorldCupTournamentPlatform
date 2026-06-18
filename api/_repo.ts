@@ -1,4 +1,4 @@
-import { createRepository } from '../server/src/store';
+import { createRepository } from '../server/src/store.js';
 
 declare global {
     // cache the repository promise across lambda invocations

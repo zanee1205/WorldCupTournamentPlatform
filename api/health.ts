@@ -1,4 +1,4 @@
-import { setCorsHeaders, handleOptions } from './_cors';
+import { setCorsHeaders, handleOptions } from './_cors.js';
 
 export default async function handler(_req: any, res: any) {
     setCorsHeaders(_req, res);

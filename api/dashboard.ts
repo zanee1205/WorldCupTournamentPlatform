@@ -1,5 +1,5 @@
-import { getRepository } from './_repo';
-import { setCorsHeaders, handleOptions } from './_cors';
+import { getRepository } from './_repo.js';
+import { setCorsHeaders, handleOptions } from './_cors.js';
 
 export default async function handler(req: any, res: any) {
     setCorsHeaders(req, res);

@@ -43,17 +43,23 @@ export function HomePage({ dashboard, onOpenMatch }: HomePageProps) {
     );
   };
 
+  const truncate = (s: string, max = 9) => (s.length > max ? `${s.slice(0, max - 1)}…` : s);
+
   const renderMatchLabelShort = (match: TournamentMatch) => {
     const parts = (match.title ?? '').split(/vs|VS|–|-|—/).map((p) => p.trim()).filter(Boolean);
     const home = match.homeLabel ?? parts[0] ?? '';
     const away = match.awayLabel ?? parts[1] ?? '';
     return (
-      <div style={{ display: 'flex', alignItems: 'center', gap: 6, width: '100%', overflow: 'hidden' }}>
-        <CountryFlag name={home} size={isMobile ? 14 : 18} showName={false} />
-        <span style={{ color: 'rgba(255,255,255,0.85)', fontSize: 12, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{home}</span>
-        <span style={{ color: 'rgba(156,163,175,0.9)', fontSize: 11, margin: '0 6px' }}>vs</span>
-        <CountryFlag name={away} size={isMobile ? 14 : 18} showName={false} />
-        <span style={{ color: 'rgba(255,255,255,0.75)', fontSize: 12, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{away}</span>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 4, width: '100%', minWidth: 0, overflow: 'hidden' }}>
+        <span style={{ flexShrink: 0, display: 'flex' }}>
+          <CountryFlag name={home} size={isMobile ? 14 : 18} showName={false} />
+        </span>
+        <span style={{ flex: '1 1 auto', minWidth: 0, color: 'rgba(255,255,255,0.85)', fontSize: 12, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{truncate(home, isMobile ? 6 : 10)}</span>
+        <span style={{ flexShrink: 0, color: 'rgba(156,163,175,0.9)', fontSize: 11 }}>vs</span>
+        <span style={{ flexShrink: 0, display: 'flex' }}>
+          <CountryFlag name={away} size={isMobile ? 14 : 18} showName={false} />
+        </span>
+        <span style={{ flex: '1 1 auto', minWidth: 0, color: 'rgba(255,255,255,0.75)', fontSize: 12, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{truncate(away, isMobile ? 6 : 10)}</span>
       </div>
     );
   };

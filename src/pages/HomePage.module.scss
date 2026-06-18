@@ -12,6 +12,7 @@
 
 .calendarItem {
   cursor: pointer;
+  min-width: 0;
 
   &:hover {
     background: transparent !important;
@@ -20,17 +21,20 @@
   .calendarLink {
     max-width: 100%;
     display: block;
-    width: 100%;
+    width: calc(100% - 90px);
+    min-width: 0;
     min-height: 36px;
     border: 0;
     background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(139, 92, 246, 0.2)) !important;
     border-left: 3px solid #6366f1 !important;
     border-radius: 6px !important;
     padding: 6px 8px;
-    text-align: left;
+    text-align: center;
     cursor: pointer;
     overflow: hidden;
     max-width: 100%;
+    margin: 0 auto;
+
 
     &:hover {
       background: linear-gradient(135deg, rgba(99, 102, 241, 0.01), rgba(139, 92, 246, 0.01)) !important;
@@ -60,12 +64,14 @@
   flex-direction: column;
   height: 100%;
   overflow: hidden;
+  min-width: 0;
 
   .calendarDayBody {
     display: block;
     max-height: 120px;
     overflow: hidden;
     position: relative;
+    min-width: 0;
   }
 }
 
@@ -186,10 +192,17 @@
     }
 
     .ant-picker-cell-inner {
+      display: block !important;
+      width: 100% !important;
+      height: 100%;
       padding: 0 !important;
     }
 
     .ant-picker-calendar-date {
+      display: flex !important;
+      flex-direction: column;
+      align-items: center; // căn giữa theo chiều ngang
+      width: 100%;
       margin: 0;
       padding: 6px;
       border-radius: 0;
@@ -204,12 +217,14 @@
     }
 
     .ant-picker-calendar-date-value {
+      text-align: center;
       color: rgba(255, 255, 255, 0.75) !important;
     }
 
     // ── Border ô ──
     .ant-picker-content {
       border-collapse: collapse;
+      table-layout: fixed !important;
 
       th,
       td {

@@ -7,14 +7,25 @@ import type { MatchResult } from '../server/src/types/resultInput.ts';
 
 // Read API base from Vite env. If not provided, fall back to relative `/api`.
 const rawApi = (import.meta.env.VITE_API_URL as string) ?? '';
-// Blocklist known deprecated/removed hosts (Render) so deployed frontend won't call them.
-const BLOCKLIST = ['onrender.com'];
+
+// When building for production and no `VITE_API_URL` is set, prefer the
+// Render-hosted backend so the deployed frontend talks to the Render server.
+const DEFAULT_RENDER_API = 'https://worldcuptournamentplatform.onrender.com';
+
+// Keep blocklist empty by default to allow calling Render host. If you need to
+// block specific hosts again, add them here.
+const BLOCKLIST: string[] = [];
 
 let sanitized = rawApi?.trim() ?? '';
+// If running a production build and no explicit VITE_API_URL provided, use Render URL.
+if ((!sanitized || sanitized === '') && import.meta.env.PROD) {
+  sanitized = DEFAULT_RENDER_API;
+}
+
 const lower = sanitized.toLowerCase();
 if (sanitized && BLOCKLIST.some((b) => lower.includes(b))) {
   // eslint-disable-next-line no-console
-  console.warn('[api] Ignoring VITE_API_URL because it points to a removed service:', sanitized);
+  console.warn('[api] Ignoring VITE_API_URL because it points to a blocked service:', sanitized);
   sanitized = '';
 }
 

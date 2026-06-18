@@ -18,7 +18,7 @@
   }
 
   .calendarLink {
-    max-width: 150px;
+    max-width: 100%;
     display: block;
     width: 100%;
     min-height: 36px;
@@ -30,7 +30,7 @@
     text-align: left;
     cursor: pointer;
     overflow: hidden;
-    max-width: 120px;
+    max-width: 100%;
 
     &:hover {
       background: linear-gradient(135deg, rgba(99, 102, 241, 0.01), rgba(139, 92, 246, 0.01)) !important;
@@ -62,11 +62,22 @@
   overflow: hidden;
 
   .calendarDayBody {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
+    display: block;
+    max-height: 120px;
     overflow: hidden;
+    position: relative;
   }
+}
+
+.moreBadge {
+  margin-top: 6px;
+  font-size: 11px;
+  color: #c7d2fe;
+  background: rgba(99, 102, 241, 0.12);
+  padding: 4px 6px;
+  border-radius: 6px;
+  display: inline-block;
+  cursor: pointer;
 }
 
 .heroCard {

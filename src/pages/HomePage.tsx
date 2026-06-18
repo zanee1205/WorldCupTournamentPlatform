@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-import { Button, Card, Calendar, Empty, List, Progress, Space, Tag, Tooltip, Typography } from 'antd';
+import { Button, Card, Calendar, Empty, List, Progress, Space, Tag, Tooltip, Typography, Drawer } from 'antd';
 import type { CalendarProps } from 'antd';
 import dayjs, { type Dayjs } from 'dayjs';
 import { formatDateTime } from '../../shared/date';
@@ -17,6 +17,17 @@ type HomePageProps = {
 
 export function HomePage({ dashboard, onOpenMatch }: HomePageProps) {
   const [monthValue, setMonthValue] = useState(dayjs());
+  const [isMobile, setIsMobile] = useState<boolean>(typeof window !== 'undefined' ? window.innerWidth <= 480 : false);
+  const [drawerMatches, setDrawerMatches] = useState<TournamentMatch[] | null>(null);
+
+  useEffect(() => {
+    function onResize() {
+      setIsMobile(window.innerWidth <= 480);
+    }
+    onResize();
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
   const lockedProgress = Math.round((dashboard.summary.predictedMatches / dashboard.summary.totalMatches) * 100);
 
   const renderMatchTitle = (match: TournamentMatch) => {
@@ -38,10 +49,10 @@ export function HomePage({ dashboard, onOpenMatch }: HomePageProps) {
     const away = match.awayLabel ?? parts[1] ?? '';
     return (
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, width: '100%', overflow: 'hidden' }}>
-        <CountryFlag name={home} size={18} showName={false} />
+        <CountryFlag name={home} size={isMobile ? 14 : 18} showName={false} />
         <span style={{ color: 'rgba(255,255,255,0.85)', fontSize: 12, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{home}</span>
         <span style={{ color: 'rgba(156,163,175,0.9)', fontSize: 11, margin: '0 6px' }}>vs</span>
-        <CountryFlag name={away} size={18} showName={false} />
+        <CountryFlag name={away} size={isMobile ? 14 : 18} showName={false} />
         <span style={{ color: 'rgba(255,255,255,0.75)', fontSize: 12, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{away}</span>
       </div>
     );
@@ -51,33 +62,53 @@ export function HomePage({ dashboard, onOpenMatch }: HomePageProps) {
   const renderDayItems = (dateKey: string) => {
     const items = dashboard.calendar[dateKey] ?? [];
 
-    const visible = items.slice(0, 2);
+    const maxVisible = isMobile ? 1 : 2;
+    const visible = items.slice(0, maxVisible);
 
-    return visible.map((match) => (
-      <div key={match.id} className={styles.calendarItem}>
-        <Tooltip title={`${match.title} • ${match.stageLabel}`}>
-          <button
-            type="button"
-            className={styles.calendarLink}
-            onMouseDown={(event) => {
-              event.preventDefault();
-              event.stopPropagation();
-            }}
-            onClick={(event) => {
-              event.preventDefault();
-              event.stopPropagation();
-              onOpenMatch(match);
+    return (
+      <>
+        {visible.map((match) => (
+          <div key={match.id} className={styles.calendarItem}>
+            <Tooltip title={`${match.title} • ${match.stageLabel}`}>
+              <button
+                type="button"
+                className={styles.calendarLink}
+                onMouseDown={(event) => {
+                  event.preventDefault();
+                  event.stopPropagation();
+                }}
+                onClick={(event) => {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  onOpenMatch(match);
+                }}
+              >
+                <div className={styles.calendarTitle}>{renderMatchLabelShort(match)}</div>
+                <div className={styles.calendarMeta}>
+                  {match.timeLabel ? `${match.timeLabel} • ` : ''}
+                  {match.stageLabel}
+                </div>
+              </button>
+            </Tooltip>
+          </div>
+        ))}
+
+        {items.length > maxVisible ? (
+          <div
+            className={styles.moreBadge}
+            role="button"
+            tabIndex={0}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setDrawerMatches(items);
             }}
           >
-            <div className={styles.calendarTitle}>{renderMatchLabelShort(match)}</div>
-            <div className={styles.calendarMeta}>
-              {match.timeLabel ? `${match.timeLabel} • ` : ''}
-              {match.stageLabel}
-            </div>
-          </button>
-        </Tooltip>
-      </div>
-    ));
+            +{items.length - maxVisible} trận
+          </div>
+        ) : null}
+      </>
+    );
   };
 
   const cellRender: CalendarProps<Dayjs>['cellRender'] = (current, info) => {
@@ -225,6 +256,34 @@ export function HomePage({ dashboard, onOpenMatch }: HomePageProps) {
           cellRender={cellRender}
         />
       </Card>
+
+      <Drawer
+        title={drawerMatches && drawerMatches.length > 0 ? `Trận ngày ${drawerMatches[0].dateKey}` : 'Trận trong ngày'}
+        placement="bottom"
+        height={isMobile ? '60%' : 360}
+        onClose={() => setDrawerMatches(null)}
+        open={drawerMatches !== null}
+      >
+        <List
+          size="small"
+          dataSource={drawerMatches ?? []}
+          renderItem={(match) => (
+            <List.Item
+              key={match.id}
+              onClick={() => {
+                setDrawerMatches(null);
+                onOpenMatch(match);
+              }}
+              style={{ cursor: 'pointer' }}
+            >
+              <List.Item.Meta
+                title={renderMatchLabelShort(match)}
+                description={`${match.stageLabel} • ${formatDateTime(match.dateKey, match.timeLabel)}`}
+              />
+            </List.Item>
+          )}
+        />
+      </Drawer>
     </Space>
   );
 }

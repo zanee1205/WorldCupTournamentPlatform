@@ -73,6 +73,11 @@ export function createApp(repository: TournamentRepository) {
       const predictedHomeScore = Number(request.body?.predictedHomeScore);
       const predictedAwayScore = Number(request.body?.predictedAwayScore);
 
+      // Debug logging to help diagnose deployed backend issues
+      // (these logs appear in Render / service logs)
+      // eslint-disable-next-line no-console
+      console.log(`[api] PATCH /api/matches/${id}/prediction - payload=`, request.body);
+
       if (!Number.isInteger(id) || !isValidScore(predictedHomeScore) || !isValidScore(predictedAwayScore)) {
         response.status(400).json({ message: 'Dữ liệu dự đoán không hợp lệ.' });
         return;
@@ -83,8 +88,13 @@ export function createApp(repository: TournamentRepository) {
         predictedAwayScore,
       });
 
+      // eslint-disable-next-line no-console
+      console.log(`[api] updatePrediction success for match ${id}`, { prediction: match.prediction });
+
       response.json(match);
     } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('[api] updatePrediction error', error);
       const message = error instanceof Error ? error.message : 'Không thể cập nhật dự đoán.';
       response.status(message.includes('khóa dự đoán') ? 423 : 400).json({
         message,

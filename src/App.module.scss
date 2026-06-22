@@ -262,6 +262,13 @@
                 justify-content: center;
                 height: 44px;
             }
+
+            .headerActions {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                margin-left: 12px;
+            }
         }
 
         .appContent {

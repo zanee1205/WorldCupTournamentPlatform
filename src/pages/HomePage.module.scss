@@ -286,8 +286,12 @@
         }
       }
     }
+  }
+}
 
-    @media (max-width: 768px) {
+@media (max-width: 768px) {
+  .calendarCard {
+    :global {
       .ant-picker-calendar-date {
         min-height: 130px;
         padding: 6px;

@@ -143,6 +143,7 @@ export function HomePage({ dashboard, onOpenMatch }: HomePageProps) {
             fontFamily: "'Bebas Neue', sans-serif",
             fontSize: 42,
             letterSpacing: 2,
+            fontWeight: 900,
           }}
         >
           Trang chủ lịch thi đấu

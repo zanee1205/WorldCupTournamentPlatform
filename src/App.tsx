@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link, Route, Routes, useLocation } from 'react-router-dom';
 import { Alert, Layout, Menu, Spin, message, Drawer, Button } from 'antd';
 import { MenuOutlined } from '@ant-design/icons';
+import NotificationBell from './components/NotificationBell';
 
 import { DashboardPage } from './pages/DashboardPage.tsx';
 import { HomePage } from './pages/HomePage.tsx';
@@ -86,6 +87,10 @@ function Shell({
             items={navItems}
           />
         ) : null}
+
+        <div className={styles.headerActions}>
+          <NotificationBell matches={dashboard.todayMatches} onOpenMatch={onOpenMatch} />
+        </div>
 
         <Drawer
           title={null}

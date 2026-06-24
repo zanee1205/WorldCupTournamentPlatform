@@ -1,7 +1,7 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import styles from './CountryFlag.module.scss';
-import { COUNTRY_FLAG_CODE } from '../../server/src/mappings/countryFlagCode.ts';
-import { apiPath } from '../api.ts';
+import { COUNTRY_FLAG_CODE } from '../../../server/src/mappings/countryFlagCode.ts';
+import { apiPath } from '../../api.ts';
 
 type CountryFlagProps = {
     name?: string | null;

@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
 
-import { Alert, Card, Empty, Input, Pagination, Select, Skeleton, Space, Tag, Typography, message } from 'antd';
+import { Alert, Card, Empty, Input, Pagination, Select, Skeleton, Space, Tag, Typography } from 'antd';
+import { observer } from 'mobx-react-lite';
 
-import { getPlayers } from '../api.ts';
-import { CountryFlag } from '../components/CountryFlag';
-import { TeamLineupTrigger } from '../components/TeamLineupTrigger';
-import type { PlayerListItem } from '../../server/src/types/playerListItem.ts';
+import { TeamLineupTrigger } from '../../components/MatchLineup/TeamLineupTrigger.tsx';
+import { appStore } from '../../stores/appStore.ts';
+import type { PlayerListItem } from '../../../server/src/types/playerListItem.ts';
 import styles from './PlayerListPage.module.scss';
 
 type PlayerCardMediaProps = {
@@ -41,39 +41,17 @@ function normalize(value: string) {
     .trim();
 }
 
-export function PlayerListPage() {
-  const [players, setPlayers] = useState<PlayerListItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+export const PlayerListPage = observer(function PlayerListPage() {
+  const players: PlayerListItem[] = appStore.players;
+  const loading = appStore.playersLoading && players.length === 0;
+  const error = appStore.playersError;
   const [query, setQuery] = useState('');
   const [teamFilter, setTeamFilter] = useState<string>('all');
   const [page, setPage] = useState(1);
   const pageSize = 12;
 
   useEffect(() => {
-    let cancelled = false;
-
-    setLoading(true);
-    setError(null);
-
-    getPlayers()
-      .then((data) => {
-        if (cancelled) return;
-        setPlayers(data);
-      })
-      .catch((err: unknown) => {
-        if (cancelled) return;
-        const messageText = err instanceof Error ? err.message : 'Không thể tải danh sách cầu thủ.';
-        setError(messageText);
-        message.error(messageText);
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-
-    return () => {
-      cancelled = true;
-    };
+    void appStore.loadPlayers().catch(() => undefined);
   }, []);
 
   const teamOptions = useMemo(
@@ -115,10 +93,7 @@ export function PlayerListPage() {
   return (
     <div className={styles.pageWrapper}>
       <div className={styles.heroCard}>
-        <Typography.Title
-          level={2}
-          className={styles.pageTitle}
-        >
+        <Typography.Title level={2} className={styles.pageTitle}>
           Player List
         </Typography.Title>
         <Typography.Paragraph className={styles.heroText}>
@@ -158,9 +133,7 @@ export function PlayerListPage() {
         </div>
       </Card>
 
-      {error ? (
-        <Alert type="warning" showIcon message={error} className={styles.alertBox} />
-      ) : null}
+      {error ? <Alert type="warning" showIcon message={error} className={styles.alertBox} /> : null}
 
       <Card className={styles.listCard}>
         {loading ? (
@@ -180,9 +153,7 @@ export function PlayerListPage() {
                 <Card key={player.playerId} className={styles.playerCard} bordered={false}>
                   <div className={styles.cardGlow} />
                   <div className={styles.cardTop}>
-                    <div className={styles.cardNumber}>
-                      {player.number != null ? `#${player.number}` : 'N/A'}
-                    </div>
+                    <div className={styles.cardNumber}>{player.number != null ? `#${player.number}` : 'N/A'}</div>
                     <Tag className={styles.positionTag}>{player.position}</Tag>
                   </div>
 
@@ -218,4 +189,4 @@ export function PlayerListPage() {
       </Card>
     </div>
   );
-}
+});

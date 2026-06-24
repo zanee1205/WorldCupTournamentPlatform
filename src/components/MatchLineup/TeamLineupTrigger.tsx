@@ -1,7 +1,7 @@
 import { useState } from 'react';
 
-import { CountryFlag } from '../components/CountryFlagIcon/CountryFlag';
-import { TeamLineupModal } from './MatchLineup/TeamLineupModal';
+import { CountryFlag } from '../CountryFlagIcon/CountryFlag';
+import { TeamLineupModal } from './TeamLineupModal';
 import styles from './TeamLineupTrigger.module.scss';
 
 type TeamLineupTriggerProps = {

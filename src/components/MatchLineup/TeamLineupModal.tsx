@@ -1,11 +1,12 @@
 import { Alert, Button, Modal, Popover, Spin } from 'antd';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
+import { observer } from 'mobx-react-lite';
 
-import { getTeamLineup } from '../api.ts';
-import { CountryFlag } from './CountryFlag';
+import { appStore } from '../../stores/appStore.ts';
+import { CountryFlag } from '../CountryFlagIcon/CountryFlag';
 import styles from './TeamLineupModal.module.scss';
 
-import type { LineupPlayer, TeamLineup } from '../../server/src/types/teamLineup.ts';
+import type { LineupPlayer, TeamLineup } from '../../../server/src/types/teamLineup.ts';
 
 type TeamLineupModalProps = {
   open: boolean;
@@ -13,11 +14,6 @@ type TeamLineupModalProps = {
   opponentTeamName?: string | null;
   onClose: () => void;
   onPredictScore?: () => void;
-};
-
-type LoadedLineups = {
-  home: TeamLineup | null;
-  away: TeamLineup | null;
 };
 
 function initials(name: string) {
@@ -54,9 +50,7 @@ function PlayerPopover({ player }: { player: LineupPlayer }) {
               {replacement.photo ? (
                 <img src={replacement.photo} className={styles.replaceAvatar} alt={replacement.name} />
               ) : (
-                <span className={`${styles.replaceAvatar} ${styles.avatarFallback}`}>
-                  {initials(replacement.name)}
-                </span>
+                <span className={`${styles.replaceAvatar} ${styles.avatarFallback}`}>{initials(replacement.name)}</span>
               )}
               <span>
                 {replacement.number != null ? `#${replacement.number} ` : ''}
@@ -222,9 +216,10 @@ function PitchCanvas({ mode }: { mode: 'team' | 'match' }) {
 
     draw();
 
-    const ro = typeof ResizeObserver !== 'undefined'
-      ? new ResizeObserver(() => draw())
-      : null;
+    const ro =
+      typeof ResizeObserver !== 'undefined'
+        ? new ResizeObserver(() => draw())
+        : null;
 
     if (ro) {
       ro.observe(parent);
@@ -244,92 +239,62 @@ function PitchCanvas({ mode }: { mode: 'team' | 'match' }) {
   return <canvas ref={canvasRef} className={styles.pitchCanvas} aria-hidden="true" />;
 }
 
-export function TeamLineupModal({
+export const TeamLineupModal = observer(function TeamLineupModal({
   open,
   teamName,
   opponentTeamName,
   onClose,
   onPredictScore,
 }: TeamLineupModalProps) {
-  const [lineups, setLineups] = useState<LoadedLineups>({ home: null, away: null });
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
   const hasOpponent = useMemo(
     () => Boolean(opponentTeamName && teamName && !sameTeamName(teamName, opponentTeamName)),
     [opponentTeamName, teamName],
   );
   const displayMode = hasOpponent ? 'match' : 'team';
 
+  const primaryTeam = teamName?.trim() ?? '';
+  const secondaryTeam = opponentTeamName?.trim() ?? '';
+
   useEffect(() => {
-    if (!open || !teamName) return;
+    if (!open || !primaryTeam) return;
 
-    let cancelled = false;
+    void appStore.loadTeamLineup(primaryTeam).catch(() => undefined);
 
-    setLoading(true);
-    setError(null);
-    setLineups({ home: null, away: null });
+    if (hasOpponent && secondaryTeam) {
+      void appStore.loadTeamLineup(secondaryTeam).catch(() => undefined);
+    }
+  }, [open, primaryTeam, secondaryTeam, hasOpponent]);
 
-    const primaryTeam = teamName.trim();
-    const secondaryTeam = opponentTeamName?.trim() ?? null;
+  const homeLineup = primaryTeam ? appStore.getCachedTeamLineup(primaryTeam) : null;
+  const awayLineup = hasOpponent && secondaryTeam ? appStore.getCachedTeamLineup(secondaryTeam) : null;
 
-    Promise.allSettled([
-      getTeamLineup(primaryTeam),
-      hasOpponent && secondaryTeam ? getTeamLineup(secondaryTeam) : Promise.resolve<TeamLineup | null>(null),
-    ])
-      .then(([homeResult, awayResult]) => {
-        if (cancelled) return;
+  const homeError = primaryTeam ? appStore.getTeamLineupError(primaryTeam) : null;
+  const awayError = hasOpponent && secondaryTeam ? appStore.getTeamLineupError(secondaryTeam) : null;
 
-        const home = homeResult.status === 'fulfilled' ? homeResult.value : null;
-        const away = awayResult.status === 'fulfilled' ? awayResult.value : null;
-        setLineups({ home, away });
+  const loading = Boolean(open && primaryTeam && !homeLineup && !homeError) || Boolean(open && hasOpponent && secondaryTeam && !awayLineup && !awayError);
 
-        const failures = [
-          homeResult.status === 'rejected' ? primaryTeam : null,
-          awayResult.status === 'rejected' && secondaryTeam ? secondaryTeam : null,
-        ].filter(Boolean) as string[];
+  const error = useMemo(() => {
+    const pieces: string[] = [];
 
-        if (failures.length > 0) {
-          const suffix = failures.length === 1 ? ` ${failures[0]}` : ` ${failures.join(' và ')}`;
-          setError(`Không thể tải đội hình của${suffix}.`);
-        }
-      })
-      .catch((err: unknown) => {
-        if (cancelled) return;
-        const apiMessage =
-          typeof err === 'object' &&
-          err !== null &&
-          'response' in err &&
-          typeof (err as { response?: { data?: { message?: unknown } } }).response?.data?.message === 'string'
-            ? (err as { response: { data: { message: string } } }).response.data.message
-            : null;
-        setError(apiMessage ?? (err instanceof Error ? err.message : 'Không thể tải đội hình.'));
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
+    if (primaryTeam && homeError) {
+      pieces.push(`đội hình của ${primaryTeam}: ${homeError}`);
+    }
 
-    return () => {
-      cancelled = true;
-    };
-  }, [open, teamName, opponentTeamName, hasOpponent]);
+    if (hasOpponent && secondaryTeam && awayError) {
+      pieces.push(`đội hình của ${secondaryTeam}: ${awayError}`);
+    }
 
-  const homeLineup = lineups.home;
-  const awayLineup = lineups.away;
-  const fallbackHomeName = teamName ?? '';
-  const fallbackAwayName = opponentTeamName ?? '';
-  const titleName = homeLineup?.teamName ?? fallbackHomeName;
-  const opponentName = awayLineup?.teamName ?? fallbackAwayName;
+    return pieces.length ? `Không thể tải ${pieces.join(' và ')}.` : null;
+  }, [awayError, hasOpponent, homeError, primaryTeam, secondaryTeam]);
+
+  const titleName = homeLineup?.teamName ?? primaryTeam;
+  const opponentName = awayLineup?.teamName ?? secondaryTeam;
 
   function renderPlayers(lineup: TeamLineup, mirrored: boolean) {
     return lineup.players.map((player) => {
       const x = mirrored ? 100 - player.x : player.x;
       return (
-        <Popover
-          key={`${lineup.teamCode}-${player.playerId}`}
-          content={<PlayerPopover player={player} />}
-          trigger="hover"
-        >
+        <Popover key={`${lineup.teamCode}-${player.playerId}`} content={<PlayerPopover player={player} />} trigger="hover">
           <div
             className={`${styles.playerPin} ${mirrored ? styles.playerPinMirrored : ''}`}
             style={{ left: `${x}%`, top: `${player.y}%` }}
@@ -337,9 +302,7 @@ export function TeamLineupModal({
             {player.photo ? (
               <img src={player.photo} className={styles.avatar} alt={player.name} />
             ) : (
-              <span className={`${styles.avatar} ${styles.avatarFallback}`}>
-                {initials(player.name)}
-              </span>
+              <span className={`${styles.avatar} ${styles.avatarFallback}`}>{initials(player.name)}</span>
             )}
             <div className={styles.playerName}>
               <span className={styles.playerPosition}>{player.position}</span>
@@ -389,7 +352,7 @@ export function TeamLineupModal({
 
               <div className={`${styles.matchTeam} ${styles.matchTeamRight}`}>
                 <div className={styles.titleBlock}>
-                  <div className={styles.eyebrow}>Đối thủ</div>
+                  <div className={styles.eyebrow}>Đội thủ</div>
                   <div className={styles.teamTitle}>{opponentName}</div>
                   <div className={styles.meta}>
                     {awayLineup
@@ -435,13 +398,9 @@ export function TeamLineupModal({
                   <>
                     {awayLineup ? <TeamBadge lineup={awayLineup} mirrored label="Đội khách" /> : null}
                     <TeamBadge lineup={homeLineup} label="Đội nhà" />
-                    <div className={`${styles.teamLayer} ${styles.teamLayerHome}`}>
-                      {renderPlayers(homeLineup, false)}
-                    </div>
+                    <div className={`${styles.teamLayer} ${styles.teamLayerHome}`}>{renderPlayers(homeLineup, false)}</div>
                     {awayLineup ? (
-                      <div className={`${styles.teamLayer} ${styles.teamLayerAway}`}>
-                        {renderPlayers(awayLineup, true)}
-                      </div>
+                      <div className={`${styles.teamLayer} ${styles.teamLayerAway}`}>{renderPlayers(awayLineup, true)}</div>
                     ) : null}
                   </>
                 ) : (
@@ -476,4 +435,4 @@ export function TeamLineupModal({
       </div>
     </Modal>
   );
-}
+});

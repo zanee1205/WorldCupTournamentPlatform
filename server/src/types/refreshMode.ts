@@ -1,0 +1,1 @@
+export type RefreshMode = 'initial' | 'background';

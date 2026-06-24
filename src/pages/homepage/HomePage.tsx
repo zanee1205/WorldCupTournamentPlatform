@@ -1,20 +1,16 @@
 import { useEffect, useState } from 'react';
+import { observer } from 'mobx-react-lite';
 
 import { Button, Card, Calendar, Drawer, Empty, List, Progress, Space, Tag, Tooltip, Typography } from 'antd';
 import type { CalendarProps } from 'antd';
 import dayjs, { type Dayjs } from 'dayjs';
 
-import { formatDateTime } from '../../shared/date';
-import type { DashboardResponse } from '../../server/src/types/dashboardResponse.ts';
-import type { TournamentMatch } from '../../server/src/types/tournamentMatch.ts';
-import { CountryFlag } from '../components/CountryFlag';
-import { TeamLineupModal } from '../components/TeamLineupModal';
+import { formatDateTime } from '../../../shared/date.ts';
+import type { TournamentMatch } from '../../../server/src/types/tournamentMatch.ts';
+import { CountryFlag } from '../../components/CountryFlagIcon/CountryFlag.tsx';
+import { TeamLineupModal } from '../../components/MatchLineup/TeamLineupModal.tsx';
+import { appStore } from '../../stores/appStore.ts';
 import styles from './HomePage.module.scss';
-
-type HomePageProps = {
-  dashboard: DashboardResponse;
-  onOpenMatch: (match: TournamentMatch) => void;
-};
 
 function resolveMatchTeams(match: TournamentMatch) {
   const parts = (match.title ?? '').split(/vs|VS|â€“|-|â€”/).map((p) => p.trim()).filter(Boolean);
@@ -23,7 +19,8 @@ function resolveMatchTeams(match: TournamentMatch) {
   return { home, away };
 }
 
-export function HomePage({ dashboard, onOpenMatch }: HomePageProps) {
+export const HomePage = observer(function HomePage() {
+  const dashboard = appStore.dashboard;
   const [monthValue, setMonthValue] = useState(dayjs());
   const [isMobile, setIsMobile] = useState<boolean>(typeof window !== 'undefined' ? window.innerWidth <= 480 : false);
   const [drawerMatches, setDrawerMatches] = useState<TournamentMatch[] | null>(null);
@@ -37,6 +34,10 @@ export function HomePage({ dashboard, onOpenMatch }: HomePageProps) {
     window.addEventListener('resize', onResize);
     return () => window.removeEventListener('resize', onResize);
   }, []);
+
+  if (!dashboard) {
+    return null;
+  }
 
   const lockedProgress = Math.round((dashboard.summary.predictedMatches / dashboard.summary.totalMatches) * 100);
 
@@ -60,34 +61,14 @@ export function HomePage({ dashboard, onOpenMatch }: HomePageProps) {
         <span style={{ flexShrink: 0, display: 'flex' }}>
           <CountryFlag name={home} size={isMobile ? 14 : 18} showName={false} />
         </span>
-        <span
-          style={{
-            flex: '1 1 auto',
-            minWidth: 0,
-            color: 'rgba(255,255,255,0.85)',
-            fontSize: 12,
-            whiteSpace: 'nowrap',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-          }}
-        >
+        <span style={{ flex: '1 1 auto', minWidth: 0, color: 'rgba(255,255,255,0.85)', fontSize: 12, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
           {truncate(home, isMobile ? 6 : 10)}
         </span>
         <span style={{ flexShrink: 0, color: 'rgba(156,163,175,0.9)', fontSize: 11 }}>vs</span>
         <span style={{ flexShrink: 0, display: 'flex' }}>
           <CountryFlag name={away} size={isMobile ? 14 : 18} showName={false} />
         </span>
-        <span
-          style={{
-            flex: '1 1 auto',
-            minWidth: 0,
-            color: 'rgba(255,255,255,0.75)',
-            fontSize: 12,
-            whiteSpace: 'nowrap',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-          }}
-        >
+        <span style={{ flex: '1 1 auto', minWidth: 0, color: 'rgba(255,255,255,0.75)', fontSize: 12, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
           {truncate(away, isMobile ? 6 : 10)}
         </span>
       </div>
@@ -202,10 +183,7 @@ export function HomePage({ dashboard, onOpenMatch }: HomePageProps) {
 
       <div className="row g-3">
         <div className="col-12 col-lg-4">
-          <Card
-            title={<span style={{ color: 'rgba(145, 136, 203, 0.89)' }}>Tiến độ dự đoán</span>}
-            className={styles.progressCard}
-          >
+          <Card title={<span style={{ color: 'rgba(145, 136, 203, 0.89)' }}>Tiến độ dự đoán</span>} className={styles.progressCard}>
             <Progress
               percent={lockedProgress}
               status={dashboard.summary.locked ? 'success' : 'active'}
@@ -220,20 +198,14 @@ export function HomePage({ dashboard, onOpenMatch }: HomePageProps) {
           </Card>
         </div>
         <div className="col-12 col-lg-4">
-          <Card
-            title={<span style={{ color: 'rgba(49, 227, 243, 0.89)' }}>Điểm hiện tại</span>}
-            className={styles.scoreCard}
-          >
+          <Card title={<span style={{ color: 'rgba(49, 227, 243, 0.89)' }}>Điểm hiện tại</span>} className={styles.scoreCard}>
             <div className={styles.scoreValue}>{dashboard.summary.totalPoints}</div>
             <div className={styles.textMuted}>Điểm được tính tự động từ dự đoán và kết quả thực tế.</div>
           </Card>
         </div>
 
         <div className="col-12 col-lg-4">
-          <Card
-            title={<span style={{ color: 'rgba(183, 195, 52, 0.89)' }}>Trận trong ngày</span>}
-            className={styles.todayMatchesCard}
-          >
+          <Card title={<span style={{ color: 'rgba(183, 195, 52, 0.89)' }}>Trận trong ngày</span>} className={styles.todayMatchesCard}>
             {dashboard.todayMatches.length === 0 ? (
               <Empty description="Chưa có trận nào trong ngày" />
             ) : (
@@ -243,12 +215,7 @@ export function HomePage({ dashboard, onOpenMatch }: HomePageProps) {
                 renderItem={(match) => (
                   <List.Item
                     actions={[
-                      <Button
-                        key="open"
-                        type="primary"
-                        onClick={() => onOpenMatch(match)}
-                        className={styles.viewDetailBtn}
-                      >
+                      <Button key="open" type="primary" onClick={() => appStore.openMatch(match)} className={styles.viewDetailBtn}>
                         Xem chi tiết
                       </Button>,
                     ]}
@@ -301,7 +268,7 @@ export function HomePage({ dashboard, onOpenMatch }: HomePageProps) {
               key={match.id}
               onClick={() => {
                 setDrawerMatches(null);
-                onOpenMatch(match);
+                appStore.openMatch(match);
               }}
               style={{ cursor: 'pointer' }}
             >
@@ -323,9 +290,9 @@ export function HomePage({ dashboard, onOpenMatch }: HomePageProps) {
           if (!selectedLineupMatch) return;
           const match = selectedLineupMatch;
           setSelectedLineupMatch(null);
-          onOpenMatch(match);
+          appStore.openMatch(match);
         }}
       />
     </Space>
   );
-}
+});

@@ -35,7 +35,6 @@ export function formatDateKey(dateKey: string): string {
     year: 'numeric',
   }).format(date);
 }
-
-export function formatDateTime(dateKey: string, timeLabel: string | null): string {
+ export function formatDateTime(dateKey: string, timeLabel: string | null): string {
   return `${formatDateKey(dateKey)}${timeLabel ? ` • ${timeLabel}` : ''}`;
 }

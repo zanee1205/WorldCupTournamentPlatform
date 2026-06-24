@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { Badge, Popover, List, Button, Empty } from 'antd';
 import { BellOutlined } from '@ant-design/icons';
 import styles from './NotificationBell.module.scss';
-import type { TournamentMatch } from '../../server/src/types/tournamentMatch';
-import { CountryFlag } from './CountryFlag';
+import type { TournamentMatch } from '../../../server/src/types/tournamentMatch';
+import { CountryFlag } from '../CountryFlagIcon/CountryFlag';
 
 type NotificationBellProps = {
     matches: TournamentMatch[];

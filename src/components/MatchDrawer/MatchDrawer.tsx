@@ -2,15 +2,15 @@ import { useEffect, useState } from 'react';
 import { Alert, Button, Drawer, Form, Input, InputNumber, Space } from 'antd';
 import { TrophyOutlined, RobotOutlined, SaveOutlined, ThunderboltOutlined } from '@ant-design/icons';
 
-import { formatDateTime } from '../../shared/date';
-import { getStageScore } from '../../shared/scoring';
+import { formatDateTime } from '../../../shared/date.ts';
+import { getStageScore } from '../../../shared/scoring.ts';
 import styles from './MatchDrawer.module.scss';
-import { TeamLineupTrigger } from './TeamLineupTrigger';
-import { VideoHighlights } from './VideoHighlights';
-import { apiPath } from '../api.ts';
+import { TeamLineupTrigger } from '../MatchLineup/TeamLineupTrigger.tsx';
+import { VideoHighlights } from '../VideoHighlight/VideoHighlights.tsx';
+import { apiPath } from '../../api.ts';
 
-import type { TournamentMatch } from '../../server/src/types/tournamentMatch';
-import type { MatchPrediction } from '../../server/src/types/predictionInput';
+import type { TournamentMatch } from '../../../server/src/types/tournamentMatch.ts';
+import type { MatchPrediction } from '../../../server/src/types/predictionInput.ts';
 
 type MatchDrawerProps = {
   open: boolean;

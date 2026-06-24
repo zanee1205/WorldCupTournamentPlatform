@@ -1,27 +1,23 @@
-import { Card, Statistic, Table, Tag, Typography, Progress } from 'antd';
-import { useMemo } from 'react';
+import { Card, Progress, Statistic, Table, Tag, Typography } from 'antd';
+import { observer } from 'mobx-react-lite';
 
-import type { DashboardResponse } from '../../server/src/types/dashboardResponse.ts';
-import type { TournamentMatch } from '../../server/src/types/tournamentMatch.ts';
+import { CountryFlag } from '../../components/CountryFlagIcon/CountryFlag.tsx';
+import { appStore } from '../../stores/appStore.ts';
+import { getStageScore } from '../../../shared/scoring.ts';
 
 import styles from './DashboardPage.module.scss';
-import { CountryFlag } from '../components/CountryFlag';
-import { getStageScore } from '../../shared/scoring';
 
-type DashboardPageProps = {
-  dashboard: DashboardResponse;
-  onOpenMatch: (match: TournamentMatch) => void;
-};
+export const DashboardPage = observer(function DashboardPage() {
+  const dashboard = appStore.dashboard;
 
-export function DashboardPage({ dashboard }: DashboardPageProps) {
+  if (!dashboard) {
+    return null;
+  }
 
   const lockedMessage = dashboard.summary.locked
     ? 'Read-only mode đã bật: không thể chỉnh sửa dự đoán nữa.'
     : 'Người dùng vẫn có thể cập nhật dự đoán cho đến khi đủ 104 trận.';
 
-  const filteredMatches = useMemo(() => dashboard.matches, [dashboard.matches]);
-
-  // Statistics for charts
   const resultMatches = dashboard.matches.filter((m) => Boolean(m.result));
   const maxPossiblePoints = resultMatches.reduce((acc, m) => {
     try {
@@ -59,16 +55,14 @@ export function DashboardPage({ dashboard }: DashboardPageProps) {
       >
         Dashboard
       </Typography.Title>
-      <Typography.Paragraph
-        className="mb-3"
-        style={{ color: '#e7e7e7' }}
-      >
+      <Typography.Paragraph className="mb-3" style={{ color: '#e7e7e7' }}>
         Quản lý dự đoán, nhập kết quả thực tế, và theo dõi cách điểm được cộng cho từng trận.
       </Typography.Paragraph>
       <div className="row g-3 mb-4">
         <div className="col-12 col-md-4">
           <Card className={styles.userPointCard}>
-            <Statistic title={<span style={{ color: 'rgba(183, 195, 52, 0.89)', fontSize: 20 }}> <b>Tổng điểm User</b> </span>}
+            <Statistic
+              title={<span style={{ color: 'rgba(183, 195, 52, 0.89)', fontSize: 20 }}> <b>Tổng điểm User</b> </span>}
               value={dashboard.summary.totalPoints}
             />
           </Card>
@@ -99,7 +93,9 @@ export function DashboardPage({ dashboard }: DashboardPageProps) {
             border: `0.5px solid ${dashboard.summary.locked ? 'rgba(16,185,129,0.3)' : 'rgba(245,158,11,0.3)'}`,
             padding: 5,
           }}
-        > {lockedMessage} </Tag>
+        >
+          {lockedMessage}
+        </Tag>
         <div className={styles.pointDisplay}>
           Điểm xu hướng: {dashboard.summary.stagePoints}
           <br />
@@ -171,7 +167,7 @@ export function DashboardPage({ dashboard }: DashboardPageProps) {
               title: 'Mô tả',
               dataIndex: 'title',
               render: (title: string) => {
-                const parts = (title ?? '').split(/vs|VS|–|-|—/).map((p) => p.trim()).filter(Boolean);
+                const parts = (title ?? '').split(/vs|VS|â€“|-|â€”/).map((p) => p.trim()).filter(Boolean);
                 const home = parts[0] ?? title;
                 const away = parts[1] ?? null;
                 return (
@@ -193,10 +189,10 @@ export function DashboardPage({ dashboard }: DashboardPageProps) {
               render: (value) => <span className={styles.totalPointsCell}>{value}</span>,
             },
           ]}
-          dataSource={dashboard.ledger}
+          dataSource={ledger}
           scroll={{ x: 'max-content' }}
         />
       </Card>
     </div>
   );
-}
+});

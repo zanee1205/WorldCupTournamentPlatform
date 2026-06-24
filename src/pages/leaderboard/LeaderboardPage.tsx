@@ -1,14 +1,11 @@
 import { Card, Space, Table, Tag, Typography } from 'antd';
 import type { TableColumnsType } from 'antd';
+import { observer } from 'mobx-react-lite';
 
-import type { DashboardResponse } from '../../server/src/types/dashboardResponse.ts';
-import type { GroupStandingTeam } from '../../server/src/types/groupStanding.ts';
-import { TeamLineupTrigger } from '../components/TeamLineupTrigger';
+import type { GroupStandingTeam } from '../../../server/src/types/groupStanding.ts';
+import { TeamLineupTrigger } from '../../components/MatchLineup/TeamLineupTrigger.tsx';
+import { appStore } from '../../stores/appStore.ts';
 import styles from './LeaderboardPage.module.scss';
-
-type LeaderboardPageProps = {
-  dashboard: DashboardResponse;
-};
 
 const columns: TableColumnsType<GroupStandingTeam> = [
   {
@@ -68,7 +65,13 @@ const columns: TableColumnsType<GroupStandingTeam> = [
   },
 ];
 
-export function LeaderboardPage({ dashboard }: LeaderboardPageProps) {
+export const LeaderboardPage = observer(function LeaderboardPage() {
+  const dashboard = appStore.dashboard;
+
+  if (!dashboard) {
+    return null;
+  }
+
   return (
     <div>
       <Typography.Title level={2} style={{ color: 'white' }}>
@@ -95,4 +98,4 @@ export function LeaderboardPage({ dashboard }: LeaderboardPageProps) {
       </Space>
     </div>
   );
-}
+});

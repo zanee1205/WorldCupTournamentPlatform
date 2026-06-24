@@ -55,6 +55,25 @@ export function createApp(repository: TournamentRepository) {
     response.json(await repository.listMatches());
   });
 
+  app.get('/api/players', async (_request, response) => {
+    try {
+      response.json(await repository.listPlayers());
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Không thể tải danh sách cầu thủ.';
+      response.status(500).json({ message });
+    }
+  });
+
+  app.get('/api/teams/:teamName/lineup', async (request, response) => {
+    try {
+      const teamName = decodeURIComponent(String(request.params.teamName || ''));
+      response.json(await repository.getTeamLineup(teamName));
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Không thể tải đội hình.';
+      response.status(404).json({ message });
+    }
+  });
+
   // Proxy flags from flagcdn to avoid client-side external blocking
   app.get('/api/flag/:code', async (request, response) => {
     try {

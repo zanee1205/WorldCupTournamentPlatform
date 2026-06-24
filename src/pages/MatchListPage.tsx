@@ -6,7 +6,7 @@ import type { PaginationState } from '../../server/src/types/paginationstate.ts'
 import type { TournamentMatch } from '../../server/src/types/tournamentMatch.ts';
 
 import styles from './MatchListPage.module.scss';
-import { CountryFlag } from '../components/CountryFlag';
+import { TeamLineupTrigger } from '../components/TeamLineupTrigger';
 
 type MatchListPageProps = {
     matches: TournamentMatch[];
@@ -58,9 +58,9 @@ export function MatchListPage({ matches, onOpenMatch }: MatchListPageProps) {
                 return (
                     <div>
                         <div>
-                            <CountryFlag name={home} size={24} />
+                            <TeamLineupTrigger name={home} size={24} />
                             <span style={{ margin: '0 8px', color: '#9CA3AF' }}>vs</span>
-                            <CountryFlag name={away} size={24} />
+                            <TeamLineupTrigger name={away} size={24} />
                         </div>
                         <div className={styles.textMuted}>{match.note ?? 'Chưa có ghi chú'}</div>
                     </div>

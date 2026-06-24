@@ -1,0 +1,299 @@
+.pageWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.heroCard {
+  background: linear-gradient(135deg, rgba(30, 27, 58, 0.64), rgba(26, 32, 64, 0.68));
+  border: 0.5px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 24px;
+  margin-top: 15px;
+}
+
+.pageTitle {
+  color: #ffffff !important;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 44px !important;
+  letter-spacing: 2px;
+  font-weight: 900 !important;
+  margin-bottom: 0 !important;
+}
+
+.heroText {
+  color: rgba(255, 255, 255, 0.82);
+  margin-top: 6px;
+  margin-bottom: 14px;
+}
+
+.toolbarCard {
+  background: rgba(27, 55, 196, 0.08) !important;
+  border: 0.5px solid rgba(255, 255, 255, 0.08) !important;
+
+  :global(.ant-card-body) {
+    background: transparent !important;
+    padding: 16px !important;
+  }
+}
+
+.toolbar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 280px;
+  gap: 12px;
+}
+
+.searchInput {
+
+  :global(.ant-input-affix-wrapper),
+  :global(.ant-input-group-addon) {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 0.5px solid rgba(255, 255, 255, 0.15) !important;
+    border-radius: 10px !important;
+  }
+
+  :global(input.ant-input) {
+    background: transparent !important;
+    color: rgba(255, 255, 255, 0.9) !important;
+
+    &::placeholder {
+      color: rgba(255, 255, 255, 0.35) !important;
+    }
+  }
+}
+
+.teamSelect {
+  width: 100%;
+
+  :global(.ant-select-selector) {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 0.5px solid rgba(255, 255, 255, 0.15) !important;
+    border-radius: 10px !important;
+    color: rgba(255, 255, 255, 0.9) !important;
+  }
+
+  :global(.ant-select-selection-item) {
+    color: rgba(255, 255, 255, 0.9) !important;
+  }
+}
+
+.teamSelectDropdown {
+  .ant-select-item-option-active:not(.ant-select-item-option-disabled) {
+    background: rgba(255, 255, 255, 0.08) !important;
+    color: #fff !important;
+  }
+
+  // Hoặc dùng :hover trực tiếp
+  .ant-select-item-option:hover {
+    background: rgba(255, 255, 255, 0.08) !important;
+  }
+}
+
+.alertBox {
+  background: rgba(245, 158, 11, 0.08);
+  border-color: rgba(245, 158, 11, 0.25);
+}
+
+.listCard {
+  background: rgba(27, 55, 196, 0.08) !important;
+  border: 0.5px solid rgba(255, 255, 255, 0.08) !important;
+
+  :global(.ant-card-body) {
+    background: transparent !important;
+    padding: 18px !important;
+  }
+}
+
+.skeletonGrid,
+.cardGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.playerCard {
+  position: relative;
+  overflow: hidden;
+  border-radius: 18px !important;
+  background:
+    radial-gradient(circle at 50% 10%, rgba(99, 102, 241, 0.18), transparent 35%),
+    linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(2, 6, 23, 0.98)) !important;
+  border: 1px solid rgba(125, 211, 252, 0.14) !important;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.24);
+  min-height: 420px;
+}
+
+.cardGlow {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 25% 15%, rgba(34, 211, 238, 0.18), transparent 30%),
+    radial-gradient(circle at 75% 20%, rgba(168, 85, 247, 0.16), transparent 28%);
+  pointer-events: none;
+}
+
+.cardTop {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.cardNumber {
+  color: #fff;
+  font-size: 20px;
+  font-weight: 900;
+  letter-spacing: 1px;
+}
+
+.positionTag {
+  border: 0 !important;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.35), rgba(14, 165, 233, 0.28)) !important;
+  color: #fff !important;
+  font-weight: 800 !important;
+  text-transform: uppercase;
+}
+
+.cardMedia {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 220px;
+}
+
+.photoRing {
+  width: 170px;
+  height: 170px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    radial-gradient(circle, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.02) 70%, transparent 71%),
+    linear-gradient(135deg, rgba(125, 211, 252, 0.2), rgba(34, 211, 238, 0.08));
+  box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.3), 0 24px 44px rgba(0, 0, 0, 0.28);
+}
+
+.playerPhoto,
+.photoFallback {
+  width: 146px;
+  height: 146px;
+  border-radius: 999px;
+  object-fit: cover;
+  border: 4px solid rgba(255, 255, 255, 0.92);
+  background: radial-gradient(circle, #e0f2fe, #94a3b8);
+}
+
+.photoFallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #0f172a;
+  font-weight: 900;
+  font-size: 34px;
+}
+
+.cardBody {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.playerName {
+  color: #fff;
+  font-size: 20px;
+  font-weight: 900;
+  line-height: 1.1;
+  min-height: 44px;
+}
+
+.playerMeta {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 12px;
+}
+
+.teamRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.teamName {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.footerRow {
+  margin-top: 4px;
+}
+
+.teamTrigger {
+  width: 100%;
+  justify-content: flex-start;
+  padding: 8px 10px;
+  border-radius: 14px;
+}
+
+.paginationWrap {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+@media (max-width: 1200px) {
+
+  .cardGrid,
+  .skeletonGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 992px) {
+  .toolbar {
+    grid-template-columns: 1fr;
+  }
+
+  .cardGrid,
+  .skeletonGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .pageTitle {
+    font-size: 34px !important;
+  }
+
+  .cardGrid,
+  .skeletonGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .playerCard {
+    min-height: 380px;
+  }
+
+  .photoRing {
+    width: 150px;
+    height: 150px;
+  }
+
+  .playerPhoto,
+  .photoFallback {
+    width: 128px;
+    height: 128px;
+  }
+}

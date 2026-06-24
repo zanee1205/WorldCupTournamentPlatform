@@ -1,0 +1,14 @@
+{
+  "name": "wc-import",
+  "version": "1.0.0",
+  "scripts": {
+    "import:players": "npx tsx scripts/importPlayers.ts"
+  },
+  "dependencies": {
+    "mongodb": "^6.3.0"
+  },
+  "devDependencies": {
+    "tsx": "^4.7.0",
+    "@types/node": "^20.0.0"
+  }
+}

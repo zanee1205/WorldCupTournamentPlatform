@@ -1,5 +1,6 @@
 import 'dotenv/config';
 import aiRouter from './routes/ai.js';
+import highlightRouter from './routes/highlightRouter.js';
 
 import { createApp } from './app.js';
 import { createRepository } from './store.js';
@@ -11,6 +12,7 @@ async function bootstrap() {
   const app = createApp(repository);
 
   app.use('/api/ai', aiRouter);
+  app.use('/api/highlights', highlightRouter(repository));
 
   app.listen(port, () => {
     console.log(`API server is running on http://localhost:${port}`);

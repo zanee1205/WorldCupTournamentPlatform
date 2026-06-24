@@ -56,3 +56,43 @@
     }
   }
 }
+
+.teamTrigger {
+  width: 100%;
+  justify-content: flex-start;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 16px;
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease,
+    box-shadow 0.2s ease,
+    filter 0.2s ease;
+
+  :global(.flagLabel) {
+    transition: transform 0.2s ease, filter 0.2s ease;
+  }
+
+  :global(.label) {
+    font-weight: 800;
+    color: rgba(255, 255, 255, 0.92);
+    transition: color 0.2s ease, text-shadow 0.2s ease;
+  }
+
+  &:hover,
+  &:focus-visible {
+    background: rgba(125, 211, 252, 0.14);
+    box-shadow: 0 14px 30px rgba(34, 211, 238, 0.22);
+    filter: brightness(1.08);
+    transform: translateY(-4px) scale(1.02);
+
+    :global(.flagLabel) {
+      transform: translateY(-1px);
+    }
+
+    :global(.label) {
+      color: #ffffff;
+      text-shadow: 0 6px 14px rgba(0, 0, 0, 0.35);
+    }
+  }
+}

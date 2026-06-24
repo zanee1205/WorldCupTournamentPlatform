@@ -5,7 +5,8 @@ import { TrophyOutlined, RobotOutlined, SaveOutlined, ThunderboltOutlined } from
 import { formatDateTime } from '../../shared/date';
 import { getStageScore } from '../../shared/scoring';
 import styles from './MatchDrawer.module.scss';
-import { CountryFlag } from './CountryFlag';
+import { TeamLineupTrigger } from './TeamLineupTrigger';
+import { VideoHighlights } from './VideoHighlights';
 import { apiPath } from '../api.ts';
 
 import type { TournamentMatch } from '../../server/src/types/tournamentMatch';
@@ -58,9 +59,9 @@ export function MatchDrawer({ open, match, readOnly, onClose, onSavePrediction }
   const stageScore = match ? getStageScore(match.stage) : null;
 
   // Parse tên đội nếu type không có homeTeam/awayTeam riêng
-  const [homeTeam, awayTeam] = match?.title?.split(' vs ') ?? ['', ''];
-
-  // CountryFlag imported at module scope
+  const titleTeams = match?.title?.split(' vs ') ?? ['', ''];
+  const homeTeam = match?.homeLabel ?? titleTeams[0] ?? '';
+  const awayTeam = match?.awayLabel ?? titleTeams[1] ?? '';
 
   const [drawerWidth, setDrawerWidth] = useState<number | string>(540);
   useEffect(() => {
@@ -96,7 +97,7 @@ export function MatchDrawer({ open, match, readOnly, onClose, onSavePrediction }
               </div>
               <div className={styles.matchTeams}>
                 <div className={styles.teamBlock}>
-                  <div className={styles.teamName}><CountryFlag name={homeTeam} size={40} /></div>
+                  <div className={styles.teamName}><TeamLineupTrigger name={homeTeam} size={40} /></div>
                   <div className={styles.teamCode}>HOME</div>
                 </div>
                 <div className={styles.vsBlock}>
@@ -113,7 +114,7 @@ export function MatchDrawer({ open, match, readOnly, onClose, onSavePrediction }
                   )}
                 </div>
                 <div className={styles.teamBlock}>
-                  <div className={styles.teamName}><CountryFlag name={awayTeam} size={40} /></div>
+                  <div className={styles.teamName}><TeamLineupTrigger name={awayTeam} size={40} /></div>
                   <div className={styles.teamCode}>AWAY</div>
                 </div>
               </div>
@@ -272,6 +273,18 @@ export function MatchDrawer({ open, match, readOnly, onClose, onSavePrediction }
                 <div className={styles.aiAnswer}>
                   <div className={styles.aiAnswerLabel}>Phân tích</div>
                   <p>{aiAnswer}</p>
+                </div>
+              )}
+            </div>
+
+            {/* HIGHLIGHTS */}
+            <div>
+              <div className={styles.sectionTitle}>Highlights</div>
+              {match.result ? (
+                <VideoHighlights matchId={match.id} />
+              ) : (
+                <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.3)', padding: '10px 0' }}>
+                  Highlight sẽ xuất hiện sau khi trận kết thúc
                 </div>
               )}
             </div>

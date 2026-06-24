@@ -1,11 +1,10 @@
-import { Card, Table, Tag, Typography, Space } from 'antd';
+import { Card, Space, Table, Tag, Typography } from 'antd';
 import type { TableColumnsType } from 'antd';
 
 import type { DashboardResponse } from '../../server/src/types/dashboardResponse.ts';
 import type { GroupStandingTeam } from '../../server/src/types/groupStanding.ts';
-
+import { TeamLineupTrigger } from '../components/TeamLineupTrigger';
 import styles from './LeaderboardPage.module.scss';
-import { CountryFlag } from '../components/CountryFlag';
 
 type LeaderboardPageProps = {
   dashboard: DashboardResponse;
@@ -17,16 +16,22 @@ const columns: TableColumnsType<GroupStandingTeam> = [
     dataIndex: 'rank',
     width: 130,
     align: 'center',
-    render: (rank: number) => <Tag style={{ fontSize: 14 }} color={rank <= 2 ? 'red' : rank === 3 ? 'gold' : 'default'}><b>{rank}</b></Tag>,
+    render: (rank: number) => (
+      <Tag style={{ fontSize: 14 }} color={rank <= 2 ? 'red' : rank === 3 ? 'gold' : 'default'}>
+        <b>{rank}</b>
+      </Tag>
+    ),
   },
   {
     title: 'Đội',
     dataIndex: 'teamName',
     render: (teamName: string) => (
-      <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-        <CountryFlag name={teamName} size={24} showName={false} />
-        <strong>{teamName}</strong>
-      </span>
+      <TeamLineupTrigger
+        name={teamName}
+        size={24}
+        showName
+        className={styles.teamTrigger}
+      />
     ),
   },
   {
@@ -66,7 +71,9 @@ const columns: TableColumnsType<GroupStandingTeam> = [
 export function LeaderboardPage({ dashboard }: LeaderboardPageProps) {
   return (
     <div>
-      <Typography.Title level={2} style={{ color: 'white' }}>Leaderboard</Typography.Title>
+      <Typography.Title level={2} style={{ color: 'white' }}>
+        Leaderboard
+      </Typography.Title>
       <Typography.Paragraph className={styles.description}>
         Bảng xếp hạng vòng bảng được tính từ kết quả thực tế: thắng 3 điểm, hòa 1 điểm, thua 0 điểm.
       </Typography.Paragraph>

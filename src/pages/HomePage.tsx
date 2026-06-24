@@ -1,24 +1,33 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
-import { Button, Card, Calendar, Empty, List, Progress, Space, Tag, Tooltip, Typography, Drawer } from 'antd';
+import { Button, Card, Calendar, Drawer, Empty, List, Progress, Space, Tag, Tooltip, Typography } from 'antd';
 import type { CalendarProps } from 'antd';
 import dayjs, { type Dayjs } from 'dayjs';
-import { formatDateTime } from '../../shared/date';
-import styles from './HomePage.module.scss';
 
+import { formatDateTime } from '../../shared/date';
 import type { DashboardResponse } from '../../server/src/types/dashboardResponse.ts';
 import type { TournamentMatch } from '../../server/src/types/tournamentMatch.ts';
 import { CountryFlag } from '../components/CountryFlag';
+import { TeamLineupModal } from '../components/TeamLineupModal';
+import styles from './HomePage.module.scss';
 
 type HomePageProps = {
   dashboard: DashboardResponse;
   onOpenMatch: (match: TournamentMatch) => void;
 };
 
+function resolveMatchTeams(match: TournamentMatch) {
+  const parts = (match.title ?? '').split(/vs|VS|â€“|-|â€”/).map((p) => p.trim()).filter(Boolean);
+  const home = match.homeLabel ?? parts[0] ?? match.title ?? '';
+  const away = match.awayLabel ?? parts[1] ?? '';
+  return { home, away };
+}
+
 export function HomePage({ dashboard, onOpenMatch }: HomePageProps) {
   const [monthValue, setMonthValue] = useState(dayjs());
   const [isMobile, setIsMobile] = useState<boolean>(typeof window !== 'undefined' ? window.innerWidth <= 480 : false);
   const [drawerMatches, setDrawerMatches] = useState<TournamentMatch[] | null>(null);
+  const [selectedLineupMatch, setSelectedLineupMatch] = useState<TournamentMatch | null>(null);
 
   useEffect(() => {
     function onResize() {
@@ -28,12 +37,11 @@ export function HomePage({ dashboard, onOpenMatch }: HomePageProps) {
     window.addEventListener('resize', onResize);
     return () => window.removeEventListener('resize', onResize);
   }, []);
+
   const lockedProgress = Math.round((dashboard.summary.predictedMatches / dashboard.summary.totalMatches) * 100);
 
   const renderMatchTitle = (match: TournamentMatch) => {
-    const parts = (match.title ?? '').split(/vs|VS|–|-|—/).map((p) => p.trim()).filter(Boolean);
-    const home = match.homeLabel ?? parts[0] ?? match.title ?? '';
-    const away = match.awayLabel ?? parts[1] ?? null;
+    const { home, away } = resolveMatchTeams(match);
     return (
       <span style={{ color: 'rgba(255,255,255,0.85)', display: 'flex', alignItems: 'center', gap: 8 }}>
         <CountryFlag name={home} showName={false} />
@@ -46,28 +54,48 @@ export function HomePage({ dashboard, onOpenMatch }: HomePageProps) {
   const truncate = (s: string, max = 9) => (s.length > max ? `${s.slice(0, max - 1)}…` : s);
 
   const renderMatchLabelShort = (match: TournamentMatch) => {
-    const parts = (match.title ?? '').split(/vs|VS|–|-|—/).map((p) => p.trim()).filter(Boolean);
-    const home = match.homeLabel ?? parts[0] ?? '';
-    const away = match.awayLabel ?? parts[1] ?? '';
+    const { home, away } = resolveMatchTeams(match);
     return (
       <div style={{ display: 'flex', alignItems: 'center', gap: 4, width: '100%', minWidth: 0, overflow: 'hidden' }}>
         <span style={{ flexShrink: 0, display: 'flex' }}>
           <CountryFlag name={home} size={isMobile ? 14 : 18} showName={false} />
         </span>
-        <span style={{ flex: '1 1 auto', minWidth: 0, color: 'rgba(255,255,255,0.85)', fontSize: 12, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{truncate(home, isMobile ? 6 : 10)}</span>
+        <span
+          style={{
+            flex: '1 1 auto',
+            minWidth: 0,
+            color: 'rgba(255,255,255,0.85)',
+            fontSize: 12,
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+          }}
+        >
+          {truncate(home, isMobile ? 6 : 10)}
+        </span>
         <span style={{ flexShrink: 0, color: 'rgba(156,163,175,0.9)', fontSize: 11 }}>vs</span>
         <span style={{ flexShrink: 0, display: 'flex' }}>
           <CountryFlag name={away} size={isMobile ? 14 : 18} showName={false} />
         </span>
-        <span style={{ flex: '1 1 auto', minWidth: 0, color: 'rgba(255,255,255,0.75)', fontSize: 12, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{truncate(away, isMobile ? 6 : 10)}</span>
+        <span
+          style={{
+            flex: '1 1 auto',
+            minWidth: 0,
+            color: 'rgba(255,255,255,0.75)',
+            fontSize: 12,
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+          }}
+        >
+          {truncate(away, isMobile ? 6 : 10)}
+        </span>
       </div>
     );
   };
 
-
   const renderDayItems = (dateKey: string) => {
     const items = dashboard.calendar[dateKey] ?? [];
-
     const maxVisible = isMobile ? 1 : 2;
     const visible = items.slice(0, maxVisible);
 
@@ -86,7 +114,7 @@ export function HomePage({ dashboard, onOpenMatch }: HomePageProps) {
                 onClick={(event) => {
                   event.preventDefault();
                   event.stopPropagation();
-                  onOpenMatch(match);
+                  setSelectedLineupMatch(match);
                 }}
               >
                 <div className={styles.calendarTitle}>{renderMatchLabelShort(match)}</div>
@@ -132,6 +160,8 @@ export function HomePage({ dashboard, onOpenMatch }: HomePageProps) {
     );
   };
 
+  const selectedMatchTeams = selectedLineupMatch ? resolveMatchTeams(selectedLineupMatch) : null;
+
   return (
     <Space direction="vertical" size="large" className={`w-100 ${styles.pageWrapper}`}>
       <div className={styles.heroCard}>
@@ -148,10 +178,7 @@ export function HomePage({ dashboard, onOpenMatch }: HomePageProps) {
         >
           Trang chủ lịch thi đấu
         </Typography.Title>
-        <Typography.Paragraph
-          className="mb-3"
-          style={{ color: '#d2d2d2' }}
-        >
+        <Typography.Paragraph className="mb-3" style={{ color: '#d2d2d2' }}>
           Xem các trận diễn ra trong ngày, mở chi tiết để dự đoán tỉ số, và theo dõi lịch thi đấu theo tháng.
         </Typography.Paragraph>
         <Space wrap>
@@ -164,8 +191,12 @@ export function HomePage({ dashboard, onOpenMatch }: HomePageProps) {
           >
             {dashboard.summary.locked ? 'Đã khóa dự đoán' : 'Chưa khóa dự đoán'}
           </Tag>
-          <Tag color="#0f1923" style={{ color: '#0ade57', border: '0.5px solid rgba(125,211,252,0.3)' }}>Tổng {dashboard.summary.totalMatches} trận</Tag>
-          <Tag color="#0f1923" style={{ color: '#7dd3fc', border: '0.5px solid rgba(125,211,252,0.3)' }}>Đã dự đoán {dashboard.summary.predictedMatches} trận</Tag>
+          <Tag color="#0f1923" style={{ color: '#0ade57', border: '0.5px solid rgba(125,211,252,0.3)' }}>
+            Tổng {dashboard.summary.totalMatches} trận
+          </Tag>
+          <Tag color="#0f1923" style={{ color: '#7dd3fc', border: '0.5px solid rgba(125,211,252,0.3)' }}>
+            Đã dự đoán {dashboard.summary.predictedMatches} trận
+          </Tag>
         </Space>
       </div>
 
@@ -178,20 +209,13 @@ export function HomePage({ dashboard, onOpenMatch }: HomePageProps) {
             <Progress
               percent={lockedProgress}
               status={dashboard.summary.locked ? 'success' : 'active'}
-              strokeColor={dashboard.summary.locked
-                ? '#6ee7b7'
-                : { from: '#6366f1', to: '#a5b4fc' }
-              }
+              strokeColor={dashboard.summary.locked ? '#6ee7b7' : { from: '#6366f1', to: '#a5b4fc' }}
               trailColor="rgba(255,255,255,0.08)"
             />
             <div className={styles.progressMeta}>
-              <span className={styles.progressCount}>
-                {dashboard.summary.predictedMatches}
-              </span>
-              <span className={styles.progressTotal}>
-                /{dashboard.summary.totalMatches}
-              </span>
-              {' '}trận đã có dự đoán.
+              <span className={styles.progressCount}>{dashboard.summary.predictedMatches}</span>
+              <span className={styles.progressTotal}>/{dashboard.summary.totalMatches}</span>{' '}
+              trận đã có dự đoán.
             </div>
           </Card>
         </div>
@@ -244,9 +268,7 @@ export function HomePage({ dashboard, onOpenMatch }: HomePageProps) {
       <Card
         title={
           <div style={{ textAlign: 'center' }}>
-            <span className={styles.calendarTitle}>
-              🔥 Lịch thi đấu theo tháng 🔥
-            </span>
+            <span className={styles.calendarTitle}>🔥 Lịch thi đấu theo tháng 🔥</span>
           </div>
         }
         className={styles.calendarCard}
@@ -291,6 +313,19 @@ export function HomePage({ dashboard, onOpenMatch }: HomePageProps) {
           )}
         />
       </Drawer>
+
+      <TeamLineupModal
+        open={Boolean(selectedLineupMatch)}
+        teamName={selectedMatchTeams?.home ?? null}
+        opponentTeamName={selectedMatchTeams?.away ?? null}
+        onClose={() => setSelectedLineupMatch(null)}
+        onPredictScore={() => {
+          if (!selectedLineupMatch) return;
+          const match = selectedLineupMatch;
+          setSelectedLineupMatch(null);
+          onOpenMatch(match);
+        }}
+      />
     </Space>
   );
 }

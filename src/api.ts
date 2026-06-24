@@ -4,6 +4,8 @@ import type { DashboardResponse } from '../server/src/types/dashboardResponse.ts
 import type { TournamentMatch } from '../server/src/types/tournamentMatch.ts';
 import type { MatchPrediction } from '../server/src/types/predictionInput.ts';
 import type { MatchResult } from '../server/src/types/resultInput.ts';
+import type { TeamLineup } from '../server/src/types/teamLineup.ts';
+import type { PlayerListItem } from '../server/src/types/playerListItem.ts';
 
 // Read API base from Vite env. If not provided, fall back to relative `/api`.
 const rawApi = (import.meta.env.VITE_API_URL as string) ?? '';
@@ -65,5 +67,13 @@ export async function savePrediction(matchId: number, payload: Omit<MatchPredict
   return response.data;
 }
 
+export async function getTeamLineup(teamName: string) {
+  const response = await http.get<TeamLineup>(`/teams/${encodeURIComponent(teamName)}/lineup`);
+  return response.data;
+}
 
+export async function getPlayers() {
+  const response = await http.get<PlayerListItem[]>('/players');
+  return response.data;
+}
 

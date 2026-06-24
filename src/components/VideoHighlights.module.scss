@@ -1,0 +1,27 @@
+.container {
+    width: 100%;
+}
+
+.loading {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: rgba(255, 255, 255, 0.9);
+    padding: 8px 0;
+}
+
+.error {
+    color: #ff6b6b;
+    padding: 8px 0;
+}
+
+.noVideo {
+    color: rgba(255, 255, 255, 0.5);
+    padding: 8px 0;
+}
+
+.iframeWrap {
+    border-radius: 6px;
+    overflow: hidden;
+    background: #000;
+}

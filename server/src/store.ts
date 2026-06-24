@@ -7,13 +7,38 @@ import type { MatchResult } from '../../server/src/types/resultInput.js';
 import type { ScoreLedgerEntry } from '../../server/src/types/scoreLedgerEntry.js';
 import type { DashboardSummary } from '../../server/src/types/dashboardSummary.js';
 import type { DashboardResponse } from './types/dashboardResponse.js';
+import type { PlayerListItem } from './types/playerListItem.js';
 import type { GroupStandingBoard, GroupStandingTeam } from './types/groupStanding.js';
+import type { TeamLineup, LineupPlayer, ReplacementPlayer } from './types/teamLineup.js';
 
 import { formatDateKey } from '../../shared/date.js';
 import { fetchWorldcup2026Matches } from './fetch/worldcup2026.js';
 
 
 type MatchDocument = Omit<TournamentMatch, 'score'>;
+
+type PlayerDocument = {
+    playerId: string;
+    apiId: number;
+    name: string;
+    age: number | null;
+    number: number | null;
+    photo: string;
+    position: string;
+    teamCode: string;
+    teamName: string;
+    teamId: number;
+    group: string;
+};
+
+type TeamDocument = {
+    teamId: number;
+    formation?: string | null;
+    formationSource?: string | null;
+    group: string;
+    teamCode: string;
+    teamName: string;
+};
 
 const predictionSchema = new mongoose.Schema<MatchPrediction>(
     {
@@ -68,6 +93,88 @@ const matchSchema = new mongoose.Schema<MatchDocument>(
 const MatchModel =
     (mongoose.models.TournamentMatch as mongoose.Model<MatchDocument> | undefined) ||
     mongoose.model<MatchDocument>('TournamentMatch', matchSchema);
+
+const DEF_POSITIONS = new Set(['CB', 'LB', 'RB', 'LWB', 'RWB', 'DF', 'D', 'DEFENDER', 'DEFENDERS']);
+const MID_POSITIONS = new Set(['CDM', 'CM', 'CAM', 'LM', 'RM', 'MF', 'M', 'MIDFIELDER', 'MIDFIELDERS']);
+const ATT_POSITIONS = new Set(['ST', 'CF', 'SS', 'LW', 'RW', 'FW', 'F', 'ATTACKER', 'FORWARD', 'FORWARDS']);
+
+function normalizeText(value: string): string {
+    return value
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^\w\s-]/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim()
+        .toLowerCase();
+}
+
+function escapeRegex(value: string): string {
+    return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function positionGroup(position: string): 'GK' | 'DEF' | 'MID' | 'ATT' {
+    const normalized = position.trim().toUpperCase();
+    if (normalized === 'GK' || normalized === 'G' || normalized === 'GOALKEEPER') return 'GK';
+    if (DEF_POSITIONS.has(normalized)) return 'DEF';
+    if (MID_POSITIONS.has(normalized)) return 'MID';
+    if (ATT_POSITIONS.has(normalized)) return 'ATT';
+    return 'MID';
+}
+
+function sortPlayer(left: PlayerDocument, right: PlayerDocument) {
+    const leftNumber = left.number ?? 999;
+    const rightNumber = right.number ?? 999;
+    return leftNumber - rightNumber || left.name.localeCompare(right.name, 'vi');
+}
+
+function pickPlayers(players: PlayerDocument[], count: number, selectedIds: Set<string>) {
+    const picked: PlayerDocument[] = [];
+    for (const player of players) {
+        if (selectedIds.has(player.playerId)) continue;
+        picked.push(player);
+        selectedIds.add(player.playerId);
+        if (picked.length === count) break;
+    }
+    return picked;
+}
+
+function parseFormation(formation?: string | null): number[] {
+    const parts = (formation ?? '')
+        .trim()
+        .split('-')
+        .map((part) => Number(part))
+        .filter((part) => Number.isInteger(part) && part > 0);
+
+    if (parts.length >= 2 && parts.reduce((sum, part) => sum + part, 0) === 10) {
+        return parts;
+    }
+
+    return [4, 3, 3];
+}
+
+function formationLineGroup(lineIndex: number, totalLines: number): 'DEF' | 'MID' | 'ATT' {
+    if (lineIndex === 0) return 'DEF';
+    if (lineIndex === totalLines - 1) return 'ATT';
+    return 'MID';
+}
+
+function lineCoordinates(lineIndex: number, totalLines: number, playerIndex: number, totalPlayers: number) {
+    const x = lineIndex < 0
+        ? 9
+        : 28 + ((totalLines <= 1 ? 0 : lineIndex / (totalLines - 1)) * 50);
+    const presets: Record<number, number[]> = {
+        1: [50],
+        2: [35, 65],
+        3: [24, 50, 76],
+        4: [17, 39, 61, 83],
+        5: [12, 31, 50, 69, 88],
+    };
+    const ys = presets[Math.min(totalPlayers, 5)] ?? presets[4];
+    return {
+        x,
+        y: ys[Math.min(playerIndex, ys.length - 1)],
+    };
+}
 
 function localDateKey(date = new Date()): string {
     return [
@@ -460,6 +567,32 @@ export class TournamentRepository {
         return matches.map((match) => decorateMatch(match)).sort((left, right) => left.id - right.id);
     }
 
+    async listPlayers(): Promise<PlayerListItem[]> {
+        if (!this.useMongo) {
+          throw new Error('Chức năng danh sách cầu thủ cần MongoDB collection players.');
+        }
+
+        const playerCollection = mongoose.connection.collection<PlayerDocument>('players');
+        const players = await playerCollection
+            .find({})
+            .sort({ teamName: 1, number: 1, name: 1 })
+            .toArray();
+
+        return players.map((player) => ({
+            playerId: player.playerId,
+            apiId: player.apiId,
+            name: player.name,
+            age: player.age,
+            number: player.number,
+            photo: player.photo,
+            position: player.position,
+            teamCode: player.teamCode,
+            teamName: player.teamName,
+            teamId: player.teamId,
+            group: player.group,
+        }));
+    }
+
     async getDashboard(): Promise<DashboardResponse> {
         const matches = await this.listMatches();
         const summary = buildSummary(matches);
@@ -470,6 +603,142 @@ export class TournamentRepository {
             ledger: buildLedger(matches),
             calendar: buildCalendar(matches),
             standings: buildStandings(matches),
+        };
+    }
+
+    async getTeamLineup(teamName: string): Promise<TeamLineup> {
+        const cleanedName = teamName.trim();
+        if (!cleanedName || cleanedName.toLowerCase() === 'null') {
+            throw new Error('Tên đội không hợp lệ.');
+        }
+
+        if (!this.useMongo) {
+            throw new Error('Chức năng đội hình cần MongoDB collection players.');
+        }
+
+        const normalizedInput = normalizeText(cleanedName);
+        const playerCollection = mongoose.connection.collection<PlayerDocument>('players');
+        const exactRegex = new RegExp(`^${escapeRegex(cleanedName)}$`, 'i');
+        const players = await playerCollection
+            .find({
+                $or: [
+                    { teamName: exactRegex },
+                    { teamCode: exactRegex },
+                ],
+            })
+            .sort({ number: 1, name: 1 })
+            .toArray();
+
+        const exactPlayers = players.length
+            ? players
+            : await playerCollection
+                .find({})
+                .sort({ number: 1, name: 1 })
+                .toArray()
+                .then((allPlayers) => allPlayers.filter((player) => normalizeText(player.teamName) === normalizedInput));
+
+        if (exactPlayers.length === 0) {
+            throw new Error(`Không tìm thấy cầu thủ của đội "${cleanedName}".`);
+        }
+
+        const firstPlayer = exactPlayers[0];
+        const teamCollection = mongoose.connection.collection<TeamDocument>('teams');
+        const teamDoc = await teamCollection.findOne({
+            $or: [
+                { teamId: firstPlayer.teamId },
+                { teamCode: firstPlayer.teamCode },
+                { teamName: new RegExp(`^${escapeRegex(firstPlayer.teamName)}$`, 'i') },
+            ],
+        });
+        const formation = teamDoc?.formation?.trim() || '4-3-3';
+        const formationSource = teamDoc?.formationSource?.trim() || 'default';
+        const formationLines = parseFormation(formation);
+
+        const byGroup = {
+            GK: exactPlayers.filter((player) => positionGroup(player.position) === 'GK').sort(sortPlayer),
+            DEF: exactPlayers.filter((player) => positionGroup(player.position) === 'DEF').sort(sortPlayer),
+            MID: exactPlayers.filter((player) => positionGroup(player.position) === 'MID').sort(sortPlayer),
+            ATT: exactPlayers.filter((player) => positionGroup(player.position) === 'ATT').sort(sortPlayer),
+        };
+
+        const selectedIds = new Set<string>();
+        const lineupLines: Array<{ group: 'GK' | 'DEF' | 'MID' | 'ATT'; lineIndex: number; players: PlayerDocument[] }> = [
+            { group: 'GK', lineIndex: -1, players: pickPlayers(byGroup.GK, 1, selectedIds) },
+        ];
+
+        formationLines.forEach((count, lineIndex) => {
+            const group = formationLineGroup(lineIndex, formationLines.length);
+            lineupLines.push({
+                group,
+                lineIndex,
+                players: pickPlayers(byGroup[group], count, selectedIds),
+            });
+        });
+
+        if (selectedIds.size < 11) {
+            const remaining = exactPlayers
+                .filter((player) => !selectedIds.has(player.playerId))
+                .sort(sortPlayer);
+            for (const player of remaining) {
+                const group = positionGroup(player.position);
+                const line = lineupLines.find((candidate) => candidate.group === group && candidate.players.length < (group === 'GK' ? 1 : 5))
+                    ?? lineupLines.find((candidate) => candidate.players.length < 5)
+                    ?? lineupLines[lineupLines.length - 1];
+                line.players.push(player);
+                selectedIds.add(player.playerId);
+                if (selectedIds.size >= 11) break;
+            }
+        }
+
+        const starters: LineupPlayer[] = [];
+        lineupLines.forEach((line) => {
+            line.players.forEach((player, index) => {
+                const { x, y } = lineCoordinates(line.lineIndex, formationLines.length, index, line.players.length);
+                const replacements: ReplacementPlayer[] = exactPlayers
+                    .filter((candidate) =>
+                        candidate.playerId !== player.playerId &&
+                        candidate.position === player.position &&
+                        candidate.teamName === player.teamName,
+                    )
+                    .sort(sortPlayer)
+                    .slice(0, 5)
+                    .map((candidate) => ({
+                        playerId: candidate.playerId,
+                        apiId: candidate.apiId,
+                        name: candidate.name,
+                        age: candidate.age,
+                        number: candidate.number,
+                        photo: candidate.photo,
+                        position: candidate.position,
+                    }));
+
+                starters.push({
+                    playerId: player.playerId,
+                    apiId: player.apiId,
+                    name: player.name,
+                    age: player.age,
+                    number: player.number,
+                    photo: player.photo,
+                    position: player.position,
+                    teamCode: player.teamCode,
+                    teamName: player.teamName,
+                    teamId: player.teamId,
+                    group: player.group,
+                    x,
+                    y,
+                    replacements,
+                });
+            });
+        });
+
+        return {
+            teamName: firstPlayer.teamName,
+            teamCode: firstPlayer.teamCode,
+            group: firstPlayer.group,
+            formation: formationLines.join('-'),
+            formationSource,
+            players: starters.slice(0, 11),
+            squadSize: exactPlayers.length,
         };
     }
 

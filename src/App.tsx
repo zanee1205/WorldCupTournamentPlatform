@@ -9,6 +9,7 @@ import { DashboardPage } from './pages/DashboardPage.tsx';
 import { HomePage } from './pages/HomePage.tsx';
 import { LeaderboardPage } from './pages/LeaderboardPage.tsx';
 import { MatchListPage } from './pages/MatchListPage.tsx';
+import { PlayerListPage } from './pages/PlayerListPage.tsx';
 import { MatchDrawer } from './components/MatchDrawer';
 import { getDashboard, savePrediction } from './api.ts';
 
@@ -40,6 +41,10 @@ function Shell({
       return 'leaderboard';
     }
 
+    if (location.pathname.startsWith('/list')) {
+      return 'list';
+    }
+
     return 'home';
   }, [location.pathname]);
 
@@ -58,6 +63,7 @@ function Shell({
   const navItems = useMemo(() => [
     { key: 'home', label: <Link to="/">Homepage</Link> },
     { key: 'leaderboard', label: <Link to="/leaderboard">Leaderboard</Link> },
+    { key: 'list', label: <Link style={{padding: '0 35px '}} to="/list">List</Link> },
     { key: 'dashboard', label: <Link to="/dashboard">Dashboard</Link> },
     { key: 'matches', label: <Link to="/matches">Matches</Link> },
   ], []);
@@ -107,6 +113,7 @@ function Shell({
         <Routes>
           <Route path="/" element={<HomePage dashboard={dashboard} onOpenMatch={onOpenMatch} />} />
           <Route path="/leaderboard" element={<LeaderboardPage dashboard={dashboard} />} />
+          <Route path="/list" element={<PlayerListPage />} />
           <Route path="/dashboard" element={<DashboardPage dashboard={dashboard} onOpenMatch={onOpenMatch} />} />
           <Route path="/matches" element={<MatchListPage matches={dashboard.matches} onOpenMatch={onOpenMatch} />} />
           <Route path="*" element={<Alert type="warning" message="Trang không tồn tại" showIcon />} />
@@ -203,4 +210,3 @@ export default function App() {
     </>
   );
 }
-

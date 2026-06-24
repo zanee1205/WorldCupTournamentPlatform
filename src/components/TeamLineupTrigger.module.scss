@@ -1,0 +1,56 @@
+.trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  border: 0;
+  padding: 4px 6px;
+  border-radius: 999px;
+  background: transparent;
+  cursor: pointer;
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease,
+    box-shadow 0.2s ease,
+    filter 0.2s ease;
+
+  &:hover,
+  &:focus-visible {
+    background: rgba(125, 211, 252, 0.14);
+    box-shadow: 0 14px 30px rgba(34, 211, 238, 0.22);
+    filter: brightness(1.12);
+    transform: translateY(-5px) scale(1.05);
+    outline: none;
+  }
+}
+
+.trigger :global(.flagLabel) {
+  transition: transform 0.2s ease, filter 0.2s ease;
+}
+
+.trigger :global(.label) {
+  transition: color 0.2s ease, text-shadow 0.2s ease;
+}
+
+.trigger:hover :global(.flagLabel),
+.trigger:focus-visible :global(.flagLabel) {
+  transform: translateY(-1px);
+}
+
+.trigger:hover :global(.label),
+.trigger:focus-visible :global(.label) {
+  color: #ffffff;
+  text-shadow: 0 6px 14px rgba(0, 0, 0, 0.35);
+}
+
+.disabled {
+  cursor: default;
+  opacity: 0.55;
+
+  &:hover,
+  &:focus-visible {
+    background: transparent;
+    box-shadow: none;
+    filter: none;
+    transform: none;
+  }
+}

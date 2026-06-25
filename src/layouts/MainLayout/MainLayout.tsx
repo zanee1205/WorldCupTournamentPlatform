@@ -1,11 +1,12 @@
-import { Alert, Layout } from "antd";
-import { AppFooter } from "../Footer";
-import { AppHeader } from "../Header";
-import { Content } from "antd/es/layout/layout";
-import styles from "./MainLayout.module.scss";
-import { TournamentMatch } from "../../../shared/types/tournamentMatch";
-import { appStore } from "../../store/appStore";
-import { Outlet } from "react-router-dom";
+import { Alert, Layout } from 'antd';
+import { Content } from 'antd/es/layout/layout';
+import { Outlet } from 'react-router-dom';
+
+import { AppFooter } from '../Footer.tsx';
+import { AppHeader } from '../Header.tsx';
+import styles from './MainLayout.module.scss';
+import type { TournamentMatch } from '../../../shared/types/tournamentMatch.ts';
+import { appStore } from '../../store/appStore.ts';
 
 export default function MainLayout({
     refreshing,

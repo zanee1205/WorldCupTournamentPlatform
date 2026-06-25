@@ -1,4 +1,5 @@
-import type { WorldCupMatch, WorldCupVenue } from './types';
+import type { WorldCupMatch } from '../types/worldCupMatch';
+import type { WorldCupVenue } from '../types/worldCupVenue';
 
 export function buildVenueStats(matches: WorldCupMatch[]): WorldCupVenue[] {
     return Array.from(

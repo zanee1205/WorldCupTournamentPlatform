@@ -1,4 +1,6 @@
-import type { MatchTimeLineBase } from './MatchTimeLineBase.js';
+// import type { MatchTimeLineBase } from './MatchTimeLineBase.js';
+
+import { MatchTimeLineBase } from "./matchTimeLineBase";
 
 export type WorldCupGoal = MatchTimeLineBase & {
     team: string;

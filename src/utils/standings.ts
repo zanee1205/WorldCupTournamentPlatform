@@ -1,4 +1,5 @@
-import type { WorldCupMatch, WorldCupStanding } from './types';
+import type { WorldCupMatch } from '../types/worldCupMatch';
+import type { WorldCupStanding } from '../types/worldCupStanding';
 
 export function buildStandings(matches: WorldCupMatch[]): WorldCupStanding[] {
     const standingsMap = new Map<string, WorldCupStanding>();

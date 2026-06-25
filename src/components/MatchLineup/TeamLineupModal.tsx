@@ -291,13 +291,15 @@ export const TeamLineupModal = observer(function TeamLineupModal({
   const opponentName = awayLineup?.teamName ?? secondaryTeam;
 
   function renderPlayers(lineup: TeamLineup, mirrored: boolean) {
-    return lineup.players.map((player) => {
-      const x = mirrored ? 100 - player.x : player.x;
+    const players = Array.isArray(lineup?.players) ? lineup.players : [];
+
+    return players.map((player) => {
+      const x = mirrored ? 100 - (player.x ?? 50) : (player.x ?? 50);
       return (
         <Popover key={`${lineup.teamCode}-${player.playerId}`} content={<PlayerPopover player={player} />} trigger="hover">
           <div
             className={`${styles.playerPin} ${mirrored ? styles.playerPinMirrored : ''}`}
-            style={{ left: `${x}%`, top: `${player.y}%` }}
+            style={{ left: `${x}%`, top: `${player.y ?? 50}%` }}
           >
             {player.photo ? (
               <img src={player.photo} className={styles.avatar} alt={player.name} />

@@ -609,11 +609,27 @@ export class TournamentRepository {
     async getTeamLineup(teamName: string): Promise<TeamLineup> {
         const cleanedName = teamName.trim();
         if (!cleanedName || cleanedName.toLowerCase() === 'null') {
-            throw new Error('Tên đội không hợp lệ.');
+            return {
+                teamName: 'Unknown',
+                teamCode: 'UNK',
+                group: 'TBD',
+                formation: '4-4-2',
+                formationSource: 'fallback',
+                players: [],
+                squadSize: 0,
+            };
         }
 
         if (!this.useMongo) {
-            throw new Error('Chức năng đội hình cần MongoDB collection players.');
+            return {
+                teamName: cleanedName,
+                teamCode: cleanedName.toUpperCase().slice(0, 3),
+                group: 'TBD',
+                formation: '4-4-2',
+                formationSource: 'fallback',
+                players: [],
+                squadSize: 0,
+            };
         }
 
         const normalizedInput = normalizeText(cleanedName);

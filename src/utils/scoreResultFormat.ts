@@ -1,5 +1,8 @@
 import { makeId, safeString, toDateKey, toInt, toVietnamTimeLabel } from './DateFormat';
-import type { OpenFootballGoal, OpenFootballJson, OpenFootballMatch, WorldCupData, WorldCupGoal } from './types';
+import type { OpenFootballJson } from '../types/openFootballJson';
+import type { OpenFootballMatch } from '../types/worldcupMatchCore';
+import type { WorldCupData } from '../types/worldCupData';
+import type { WorldCupGoal } from '../types/worldCupGoal';
 import { buildStandings } from './standings';
 import { buildVenueStats } from './venues';
 

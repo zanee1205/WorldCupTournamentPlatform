@@ -1,5 +1,5 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import type { OpenFootballJson } from '../types/OpenFootballJson';
+import type { OpenFootballJson } from '../types/openFootballJson';
 import type { WorldCupData } from '../types/worldCupData';
 import { normalizeWorldcupData } from '../utils/scoreResultFormat';
 

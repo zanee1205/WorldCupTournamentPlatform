@@ -60,9 +60,16 @@ export async function savePrediction(matchId: number, payload: Omit<MatchPredict
   return response.data;
 }
 
-export async function getTeamLineup(teamName: string) {
-  const response = await http.get<TeamLineup>(`/teams/${encodeURIComponent(teamName)}/lineup`);
-  return response.data;
+export async function getTeamLineup(teamName: string): Promise<TeamLineup | null> {
+  try {
+    const response = await http.get<TeamLineup>(`/teams/${encodeURIComponent(teamName)}/lineup`);
+    return response.data;
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response?.status === 404) {
+      return null; // ← để component tự xử lý trường hợp không có data
+    }
+    throw error;
+  }
 }
 
 export async function getPlayers() {

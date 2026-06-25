@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { observer } from 'mobx-react-lite';
 import { Link, useLocation } from 'react-router-dom';
 import { Button, Drawer, Layout, Menu } from 'antd';
 import { MenuOutlined } from '@ant-design/icons';
@@ -7,19 +8,13 @@ import NotificationBell from '../components/NotificationSide/NotificationBell.ts
 import styles from '../App.module.scss';
 import logo from '../assets/logo.png';
 import { useBreakpoint } from '../hooks/useViewport.ts';
-
-import type { DashboardResponse } from '../../server/src/types/dashboardResponse.ts';
-import type { TournamentMatch } from '../../shared/types/tournamentMatch.ts';
+import { appStore } from '../store/matchStore.ts';
 
 const { Header } = Layout;
 
-type AppHeaderProps = {
-  dashboard: DashboardResponse;
-  onOpenMatch: (match: TournamentMatch) => void;
-};
-
-export function AppHeader({ dashboard, onOpenMatch }: AppHeaderProps) {
+export const AppHeader = observer(function AppHeader() {
   const location = useLocation();
+  const dashboard = appStore.dashboard;
   const selectedKey = useMemo(() => {
     if (location.pathname.startsWith('/dashboard')) return 'dashboard';
     if (location.pathname.startsWith('/leaderboard')) return 'leaderboard';
@@ -29,6 +24,10 @@ export function AppHeader({ dashboard, onOpenMatch }: AppHeaderProps) {
 
   const [mobileOpen, setMobileOpen] = useState(false);
   const isMobile = useBreakpoint(768);
+
+  if (!dashboard) {
+    return null;
+  }
 
   const navItems = useMemo(
     () => [
@@ -68,7 +67,7 @@ export function AppHeader({ dashboard, onOpenMatch }: AppHeaderProps) {
       ) : null}
 
       <div className={styles.headerActions}>
-        <NotificationBell matches={dashboard.todayMatches} onOpenMatch={onOpenMatch} />
+        <NotificationBell />
       </div>
 
       <Drawer
@@ -88,4 +87,4 @@ export function AppHeader({ dashboard, onOpenMatch }: AppHeaderProps) {
       </Drawer>
     </Header>
   );
-}
+});

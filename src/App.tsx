@@ -1,24 +1,23 @@
-<link href="https://fonts.googleapis.com/css2?family=Oswald&display=swap" rel="stylesheet"></link>
-import { useEffect, useMemo, useState } from 'react';
-import { Link, Route, Routes, useLocation } from 'react-router-dom';
-import { Alert, Layout, Menu, Spin, message, Drawer, Button } from 'antd';
-import { MenuOutlined } from '@ant-design/icons';
+import { useEffect } from 'react';
+import { Route, Routes } from 'react-router-dom';
+import { Alert, Button, Layout, Spin, message } from 'antd';
 import { observer } from 'mobx-react-lite';
 
-import NotificationBell from './components/NotificationSide/NotificationBell.tsx';
 import { AIChatBubble } from './components/AiChatBubble/AIChatBubble.tsx';
 import { MatchDrawer } from './components/MatchDrawer/MatchDrawer.tsx';
+import { AppFooter } from './layouts/footer.tsx';
+import { AppHeader } from './layouts/header.tsx';
 import { DashboardPage } from './pages/dashboard/DashboardPage.tsx';
 import { HomePage } from './pages/homepage/HomePage.tsx';
 import { LeaderboardPage } from './pages/leaderboard/LeaderboardPage.tsx';
 import { MatchListPage } from './pages/matchlist/MatchListPage.tsx';
 import { PlayerListPage } from './pages/playerlist/PlayerListPage.tsx';
 import styles from './App.module.scss';
-import { appStore } from './stores/appStore.ts';
+import { appStore } from './store/matchStore.ts';
 
 import type { TournamentMatch } from '../server/src/types/tournamentMatch.ts';
 
-const { Header, Content, Footer } = Layout;
+const { Content } = Layout;
 
 function Shell({
   dashboard,
@@ -29,85 +28,9 @@ function Shell({
   onOpenMatch: (match: TournamentMatch) => void;
   refreshing: boolean;
 }) {
-  const location = useLocation();
-  const selectedKey = useMemo(() => {
-    if (location.pathname.startsWith('/dashboard')) return 'dashboard';
-    if (location.pathname.startsWith('/leaderboard')) return 'leaderboard';
-    if (location.pathname.startsWith('/list')) return 'list';
-    return 'home';
-  }, [location.pathname]);
-
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const [isMobile, setIsMobile] = useState<boolean>(typeof window !== 'undefined' ? window.innerWidth <= 768 : false);
-
-  useEffect(() => {
-    function onResize() {
-      setIsMobile(window.innerWidth <= 768);
-    }
-
-    onResize();
-    window.addEventListener('resize', onResize);
-    return () => window.removeEventListener('resize', onResize);
-  }, []);
-
-  const navItems = useMemo(
-    () => [
-      { key: 'home', label: <Link to="/">Homepage</Link> },
-      { key: 'leaderboard', label: <Link to="/leaderboard">Leaderboard</Link> },
-      { key: 'list', label: <Link style={{ padding: '0 35px ' }} to="/list">List</Link> },
-      { key: 'dashboard', label: <Link to="/dashboard">Dashboard</Link> },
-      { key: 'matches', label: <Link to="/matches">Matches</Link> },
-    ],
-    [],
-  );
-
   return (
     <Layout className={styles.appShell}>
-      <Header className={styles.appHeader}>
-        <div className={styles.brand}>
-          <img src="/logo.png" alt="logo" className={styles.brandMark} />
-          <span className={styles.brandText}>Tournament Platform</span>
-        </div>
-
-        {isMobile ? (
-          <Button
-            type="text"
-            className={styles.mobileMenuBtn}
-            icon={<MenuOutlined style={{ color: '#fff', fontSize: 20 }} />}
-            onClick={() => setMobileOpen(true)}
-          />
-        ) : null}
-
-        {!isMobile ? (
-          <Menu
-            style={{ flex: 1, justifyContent: 'flex-end', minWidth: 300 }}
-            theme="dark"
-            mode="horizontal"
-            selectedKeys={[selectedKey]}
-            items={navItems}
-          />
-        ) : null}
-
-        <div className={styles.headerActions}>
-          <NotificationBell matches={dashboard.todayMatches} onOpenMatch={onOpenMatch} />
-        </div>
-
-        <Drawer
-          title={null}
-          placement="right"
-          onClose={() => setMobileOpen(false)}
-          open={mobileOpen}
-          bodyStyle={{ padding: 0 }}
-        >
-          <Menu
-            mode="inline"
-            theme="dark"
-            selectedKeys={[selectedKey]}
-            items={navItems}
-            onClick={() => setMobileOpen(false)}
-          />
-        </Drawer>
-      </Header>
+      <AppHeader dashboard={dashboard} onOpenMatch={onOpenMatch} />
 
       <Content className={styles.appContent}>
         {refreshing ? <Alert type="info" message="Đang đồng bộ dữ liệu..." showIcon className="mb-3" /> : null}
@@ -121,9 +44,7 @@ function Shell({
         </Routes>
       </Content>
 
-      <Footer style={{ textAlign: 'center', color: 'rgba(255, 255, 255, 0.65)', background: 'transparent' }}>
-        Demo Vite, TypeScript, Ant Design, Bootstrap, Node.js, MongoDB
-      </Footer>
+      <AppFooter />
     </Layout>
   );
 }

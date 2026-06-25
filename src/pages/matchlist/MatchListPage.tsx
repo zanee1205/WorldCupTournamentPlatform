@@ -6,7 +6,7 @@ import { observer } from 'mobx-react-lite';
 import { formatDateTime } from '../../../shared/date.js';
 import type { PaginationState } from '../../../server/src/types/paginationstate.ts';
 import type { TournamentMatch } from '../../../server/src/types/tournamentMatch.ts';
-import { appStore } from '../../stores/appStore.ts';
+import { appStore } from '../../store/matchStore.ts';
 
 import styles from './MatchListPage.module.scss';
 import { TeamLineupTrigger } from '../../components/MatchLineup/TeamLineupTrigger.tsx';
@@ -116,10 +116,10 @@ export const MatchListPage = observer(function MatchListPage() {
 
     const bySearch = q
       ? byStage.filter((m) =>
-          (m.homeLabel ?? '').toLowerCase().includes(q) ||
-          (m.awayLabel ?? '').toLowerCase().includes(q) ||
-          (m.title ?? '').toLowerCase().includes(q),
-        )
+        (m.homeLabel ?? '').toLowerCase().includes(q) ||
+        (m.awayLabel ?? '').toLowerCase().includes(q) ||
+        (m.title ?? '').toLowerCase().includes(q),
+      )
       : byStage.slice();
 
     const dateKey = (m: TournamentMatch) => `${m.dateKey} ${m.timeLabel ?? '00:00'}`;

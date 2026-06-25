@@ -7,7 +7,7 @@ import { getStageScore } from '../../../shared/scoring.ts';
 import styles from './MatchDrawer.module.scss';
 import { TeamLineupTrigger } from '../MatchLineup/TeamLineupTrigger.tsx';
 import { VideoHighlights } from '../VideoHighlight/VideoHighlights.tsx';
-import { apiPath } from '../../api.ts';
+import { apiPath } from '../../services/api.ts';
 
 import type { TournamentMatch } from '../../../server/src/types/tournamentMatch.ts';
 import type { MatchPrediction } from '../../../server/src/types/predictionInput.ts';

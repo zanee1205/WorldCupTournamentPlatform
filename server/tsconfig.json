@@ -14,5 +14,5 @@
     "outDir": "../dist/server",
     "noEmit": false
   },
-  "include": ["src/**/*.ts", "../shared/**/*.ts"]
+  "include": ["src/**/*.ts", "../shared/**/*.ts", "src/services/staticsService.ts", "src/services/highlightService.ts"]
 }

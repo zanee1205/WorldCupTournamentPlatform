@@ -9,7 +9,7 @@ import { formatDateTime } from '../../../shared/date.ts';
 import type { TournamentMatch } from '../../../server/src/types/tournamentMatch.ts';
 import { CountryFlag } from '../../components/CountryFlagIcon/CountryFlag.tsx';
 import { TeamLineupModal } from '../../components/MatchLineup/TeamLineupModal.tsx';
-import { appStore } from '../../stores/appStore.ts';
+import { appStore } from '../../store/matchStore.ts';
 import styles from './HomePage.module.scss';
 
 function resolveMatchTeams(match: TournamentMatch) {

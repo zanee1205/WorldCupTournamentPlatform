@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { Button, Input, Spin, Typography, Card } from "antd";
 import { CommentOutlined, CloseOutlined, RobotOutlined, SendOutlined } from "@ant-design/icons";
 import styles from './AIChatBubble.module.scss';
-import { apiPath } from '../../api.ts';
+import { apiPath } from '../../services/api.ts';
 
 type ChatMessage = { role: 'user' | 'ai'; text: string };
 

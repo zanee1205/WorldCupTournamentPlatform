@@ -2,7 +2,7 @@ import { Alert, Button, Modal, Popover, Spin } from 'antd';
 import { useEffect, useMemo, useRef } from 'react';
 import { observer } from 'mobx-react-lite';
 
-import { appStore } from '../../stores/appStore.ts';
+import { playerStore } from '../../store/playerStore.ts';
 import { CountryFlag } from '../CountryFlagIcon/CountryFlag';
 import styles from './TeamLineupModal.module.scss';
 
@@ -258,18 +258,18 @@ export const TeamLineupModal = observer(function TeamLineupModal({
   useEffect(() => {
     if (!open || !primaryTeam) return;
 
-    void appStore.loadTeamLineup(primaryTeam).catch(() => undefined);
+    void playerStore.loadTeamLineup(primaryTeam).catch(() => undefined);
 
     if (hasOpponent && secondaryTeam) {
-      void appStore.loadTeamLineup(secondaryTeam).catch(() => undefined);
+      void playerStore.loadTeamLineup(secondaryTeam).catch(() => undefined);
     }
   }, [open, primaryTeam, secondaryTeam, hasOpponent]);
 
-  const homeLineup = primaryTeam ? appStore.getCachedTeamLineup(primaryTeam) : null;
-  const awayLineup = hasOpponent && secondaryTeam ? appStore.getCachedTeamLineup(secondaryTeam) : null;
+  const homeLineup = primaryTeam ? playerStore.getCachedTeamLineup(primaryTeam) : null;
+  const awayLineup = hasOpponent && secondaryTeam ? playerStore.getCachedTeamLineup(secondaryTeam) : null;
 
-  const homeError = primaryTeam ? appStore.getTeamLineupError(primaryTeam) : null;
-  const awayError = hasOpponent && secondaryTeam ? appStore.getTeamLineupError(secondaryTeam) : null;
+  const homeError = primaryTeam ? playerStore.getTeamLineupError(primaryTeam) : null;
+  const awayError = hasOpponent && secondaryTeam ? playerStore.getTeamLineupError(secondaryTeam) : null;
 
   const loading = Boolean(open && primaryTeam && !homeLineup && !homeError) || Boolean(open && hasOpponent && secondaryTeam && !awayLineup && !awayError);
 

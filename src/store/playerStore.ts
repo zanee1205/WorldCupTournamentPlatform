@@ -1,13 +1,9 @@
 import { makeAutoObservable, runInAction } from 'mobx';
 
-import { getDashboard, getPlayers, getTeamLineup, savePrediction as savePredictionApi } from '../api.ts';
+import { getPlayers, getTeamLineup } from '../services/api.ts';
 
-import type { DashboardResponse } from '../../server/src/types/dashboardResponse.ts';
 import type { PlayerListItem } from '../../server/src/types/playerListItem.ts';
 import type { TeamLineup } from '../../server/src/types/teamLineup.ts';
-import type { TournamentMatch } from '../../server/src/types/tournamentMatch.ts';
-
-export type RefreshMode = 'initial' | 'background';
 
 function formatError(error: unknown, fallback: string) {
   return error instanceof Error ? error.message : fallback;
@@ -17,12 +13,7 @@ function normalizeTeamName(teamName: string) {
   return teamName.trim().toLowerCase();
 }
 
-export class AppStore {
-  dashboard: DashboardResponse | null = null;
-  selectedMatch: TournamentMatch | null = null;
-  loading = true;
-  refreshing = false;
-  errorMessage: string | null = null;
+export class PlayerStore {
   players: PlayerListItem[] = [];
   playersLoading = false;
   playersLoaded = false;
@@ -42,53 +33,6 @@ export class AppStore {
       },
       { autoBind: true },
     );
-  }
-
-  async refresh(mode: RefreshMode = 'background') {
-    if (mode === 'initial') {
-      this.loading = true;
-    } else {
-      this.refreshing = true;
-    }
-
-    try {
-      const data = await getDashboard();
-      runInAction(() => {
-        this.dashboard = data;
-        this.errorMessage = null;
-
-        if (this.selectedMatch) {
-          const updatedMatch = data.matches.find((match) => match.id === this.selectedMatch?.id);
-          if (updatedMatch) {
-            this.selectedMatch = updatedMatch;
-          }
-        }
-      });
-      return data;
-    } catch (error) {
-      runInAction(() => {
-        this.errorMessage = formatError(error, 'Không tải được dữ liệu.');
-      });
-      throw error;
-    } finally {
-      runInAction(() => {
-        this.loading = false;
-        this.refreshing = false;
-      });
-    }
-  }
-
-  openMatch(match: TournamentMatch) {
-    this.selectedMatch = match;
-  }
-
-  closeMatch() {
-    this.selectedMatch = null;
-  }
-
-  async savePrediction(matchId: number, prediction: { predictedHomeScore: number; predictedAwayScore: number }) {
-    await savePredictionApi(matchId, prediction);
-    await this.refresh('background');
   }
 
   async loadPlayers() {
@@ -192,4 +136,4 @@ export class AppStore {
   }
 }
 
-export const appStore = new AppStore();
+export const playerStore = new PlayerStore();

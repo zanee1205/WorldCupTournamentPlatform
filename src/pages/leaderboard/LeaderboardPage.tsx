@@ -4,7 +4,7 @@ import { observer } from 'mobx-react-lite';
 
 import type { GroupStandingTeam } from '../../../server/src/types/groupStanding.ts';
 import { TeamLineupTrigger } from '../../components/MatchLineup/TeamLineupTrigger.tsx';
-import { appStore } from '../../stores/appStore.ts';
+import { appStore } from '../../store/matchStore.ts';
 import styles from './LeaderboardPage.module.scss';
 
 const columns: TableColumnsType<GroupStandingTeam> = [

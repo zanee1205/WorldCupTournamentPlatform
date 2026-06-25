@@ -1,7 +1,7 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import styles from './CountryFlag.module.scss';
 import { COUNTRY_FLAG_CODE } from '../../../server/src/mappings/countryFlagCode.ts';
-import { apiPath } from '../../api.ts';
+import { apiPath } from '../../services/api.ts';
 
 type CountryFlagProps = {
     name?: string | null;
@@ -117,14 +117,14 @@ export function CountryFlag({ name, size, showName = true, className }: CountryF
     // Prefer serving local assets from `public/flags/*.svg` (served at `/flags/` by Vite).
     // If the local SVG is missing or fails, fall back to the server proxy `/api/flag`,
     // then to the CDN PNG as a last resort.
-    const [imgSrc, setImgSrc] = useState<string | null>(() => (code ? `/flags/${code}.svg` : null));
+    const [imgSrc, setImgSrc] = useState<string | null>(() => (code ? `../../assets/flags/${code}.svg` : null));
 
     useEffect(() => {
         if (!code) {
             setImgSrc(null);
             return;
         }
-        setImgSrc(`/flags/${code}.svg`);
+        setImgSrc(`../../assets/flags/${code}.svg`);
         setErrored(false);
     }, [code, displayWidth]);
 

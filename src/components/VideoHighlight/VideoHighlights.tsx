@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Button, Spin } from 'antd';
 import styles from './VideoHighlights.module.scss';
-import { apiPath } from '../../api.ts';
+import { apiPath } from '../../services/api.ts';
 
 type VideoItem = {
     embed?: string;

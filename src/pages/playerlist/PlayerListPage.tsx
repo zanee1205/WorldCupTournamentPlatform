@@ -4,7 +4,7 @@ import { Alert, Card, Empty, Input, Pagination, Select, Skeleton, Space, Tag, Ty
 import { observer } from 'mobx-react-lite';
 
 import { TeamLineupTrigger } from '../../components/MatchLineup/TeamLineupTrigger.tsx';
-import { appStore } from '../../stores/appStore.ts';
+import { playerStore } from '../../store/playerStore.ts';
 import type { PlayerListItem } from '../../../server/src/types/playerListItem.ts';
 import styles from './PlayerListPage.module.scss';
 
@@ -42,16 +42,16 @@ function normalize(value: string) {
 }
 
 export const PlayerListPage = observer(function PlayerListPage() {
-  const players: PlayerListItem[] = appStore.players;
-  const loading = appStore.playersLoading && players.length === 0;
-  const error = appStore.playersError;
+  const players: PlayerListItem[] = playerStore.players;
+  const loading = playerStore.playersLoading && players.length === 0;
+  const error = playerStore.playersError;
   const [query, setQuery] = useState('');
   const [teamFilter, setTeamFilter] = useState<string>('all');
   const [page, setPage] = useState(1);
   const pageSize = 12;
 
   useEffect(() => {
-    void appStore.loadPlayers().catch(() => undefined);
+    void playerStore.loadPlayers().catch(() => undefined);
   }, []);
 
   const teamOptions = useMemo(

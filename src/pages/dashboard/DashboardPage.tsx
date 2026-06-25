@@ -2,7 +2,7 @@ import { Card, Progress, Statistic, Table, Tag, Typography } from 'antd';
 import { observer } from 'mobx-react-lite';
 
 import { CountryFlag } from '../../components/CountryFlagIcon/CountryFlag.tsx';
-import { appStore } from '../../stores/appStore.ts';
+import { appStore } from '../../store/matchStore.ts';
 import { getStageScore } from '../../../shared/scoring.ts';
 
 import styles from './DashboardPage.module.scss';

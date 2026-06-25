@@ -4,8 +4,9 @@ import { Alert, Card, Empty, Input, Pagination, Select, Skeleton, Space, Tag, Ty
 import { observer } from 'mobx-react-lite';
 
 import { TeamLineupTrigger } from '../../components/MatchLineup/TeamLineupTrigger.tsx';
+import { useDebounce } from '../../hooks/useDebounce.ts';
 import { playerStore } from '../../store/playerStore.ts';
-import type { PlayerListItem } from '../../../server/src/types/playerListItem.ts';
+import type { PlayerListItem } from '../../types/playerListItem.ts';
 import styles from './PlayerListPage.module.scss';
 
 type PlayerCardMediaProps = {
@@ -46,6 +47,7 @@ export const PlayerListPage = observer(function PlayerListPage() {
   const loading = playerStore.playersLoading && players.length === 0;
   const error = playerStore.playersError;
   const [query, setQuery] = useState('');
+  const debouncedQuery = useDebounce(query, 250);
   const [teamFilter, setTeamFilter] = useState<string>('all');
   const [page, setPage] = useState(1);
   const pageSize = 12;
@@ -63,7 +65,7 @@ export const PlayerListPage = observer(function PlayerListPage() {
   );
 
   const filteredPlayers = useMemo(() => {
-    const q = normalize(query);
+    const q = normalize(debouncedQuery);
 
     return players.filter((player) => {
       const matchesTeam = teamFilter === 'all' || player.teamName === teamFilter;
@@ -76,14 +78,14 @@ export const PlayerListPage = observer(function PlayerListPage() {
 
       return matchesTeam && matchesQuery;
     });
-  }, [players, query, teamFilter]);
+  }, [players, debouncedQuery, teamFilter]);
 
   const totalTeams = teamOptions.length;
   const teamCountLabel = teamFilter === 'all' ? `${totalTeams} đội` : '1 đội';
 
   useEffect(() => {
     setPage(1);
-  }, [query, teamFilter]);
+  }, [debouncedQuery, teamFilter]);
 
   const pagePlayers = useMemo(() => {
     const start = (page - 1) * pageSize;

@@ -2,9 +2,9 @@ import axios from 'axios';
 
 import type { DashboardResponse } from '../../server/src/types/dashboardResponse.ts';
 import type { MatchPrediction } from '../../server/src/types/predictionInput.ts';
-import type { PlayerListItem } from '../../server/src/types/playerListItem.ts';
-import type { TeamLineup } from '../../server/src/types/teamLineup.ts';
-import type { TournamentMatch } from '../../server/src/types/tournamentMatch.ts';
+import type { PlayerListItem } from '../types/playerListItem.ts';
+import type { TeamLineup } from '../../shared/types/teamLineup.ts';
+import type { TournamentMatch } from '../../shared/types/tournamentMatch.ts';
 
 // Read API base from Vite env. If not provided, fall back to relative `/api`.
 const rawApi = (import.meta.env.VITE_API_URL as string) ?? '';
@@ -52,11 +52,6 @@ const http = axios.create({
 
 export async function getDashboard() {
   const response = await http.get<DashboardResponse>('/dashboard');
-  return response.data;
-}
-
-export async function getMatches() {
-  const response = await http.get<TournamentMatch[]>('/matches');
   return response.data;
 }
 

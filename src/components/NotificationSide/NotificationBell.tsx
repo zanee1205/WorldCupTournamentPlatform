@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Badge, Popover, List, Button, Empty } from 'antd';
 import { BellOutlined } from '@ant-design/icons';
 import styles from './NotificationBell.module.scss';
-import type { TournamentMatch } from '../../../server/src/types/tournamentMatch';
+import type { TournamentMatch } from '../../../shared/types/tournamentMatch';
 import { CountryFlag } from '../CountryFlagIcon/CountryFlag';
+import { useToggle } from '../../hooks/useToggle';
 
 type NotificationBellProps = {
     matches: TournamentMatch[];
@@ -11,7 +12,7 @@ type NotificationBellProps = {
 };
 
 export default function NotificationBell({ matches, onOpenMatch }: NotificationBellProps) {
-    const [open, setOpen] = useState(false);
+    const { value: open, setValue: setOpen } = useToggle(false);
     const count = matches.length;
 
     const content = count === 0 ? (

@@ -6,7 +6,7 @@ import { playerStore } from '../../store/playerStore.ts';
 import { CountryFlag } from '../CountryFlagIcon/CountryFlag';
 import styles from './TeamLineupModal.module.scss';
 
-import type { LineupPlayer, TeamLineup } from '../../../server/src/types/teamLineup.ts';
+import type { LineupPlayer, TeamLineup } from '../../../shared/types/teamLineup.ts';
 
 type TeamLineupModalProps = {
   open: boolean;

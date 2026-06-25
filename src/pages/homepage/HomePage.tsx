@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { observer } from 'mobx-react-lite';
 
 import { Button, Card, Calendar, Drawer, Empty, List, Progress, Space, Tag, Tooltip, Typography } from 'antd';
@@ -6,9 +6,10 @@ import type { CalendarProps } from 'antd';
 import dayjs, { type Dayjs } from 'dayjs';
 
 import { formatDateTime } from '../../../shared/date.ts';
-import type { TournamentMatch } from '../../../server/src/types/tournamentMatch.ts';
+import type { TournamentMatch } from '../../../shared/types/tournamentMatch.ts';
 import { CountryFlag } from '../../components/CountryFlagIcon/CountryFlag.tsx';
 import { TeamLineupModal } from '../../components/MatchLineup/TeamLineupModal.tsx';
+import { useBreakpoint } from '../../hooks/useViewport.ts';
 import { appStore } from '../../store/matchStore.ts';
 import styles from './HomePage.module.scss';
 
@@ -22,18 +23,9 @@ function resolveMatchTeams(match: TournamentMatch) {
 export const HomePage = observer(function HomePage() {
   const dashboard = appStore.dashboard;
   const [monthValue, setMonthValue] = useState(dayjs());
-  const [isMobile, setIsMobile] = useState<boolean>(typeof window !== 'undefined' ? window.innerWidth <= 480 : false);
+  const isMobile = useBreakpoint(480);
   const [drawerMatches, setDrawerMatches] = useState<TournamentMatch[] | null>(null);
   const [selectedLineupMatch, setSelectedLineupMatch] = useState<TournamentMatch | null>(null);
-
-  useEffect(() => {
-    function onResize() {
-      setIsMobile(window.innerWidth <= 480);
-    }
-    onResize();
-    window.addEventListener('resize', onResize);
-    return () => window.removeEventListener('resize', onResize);
-  }, []);
 
   if (!dashboard) {
     return null;

@@ -4,8 +4,8 @@ import { useEffect, useMemo, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 
 import { formatDateTime } from '../../../shared/date.js';
-import type { PaginationState } from '../../../server/src/types/paginationstate.ts';
-import type { TournamentMatch } from '../../../server/src/types/tournamentMatch.ts';
+import type { PaginationState } from '../../types/paginationstate.ts';
+import type { TournamentMatch } from '../../../shared/types/tournamentMatch.ts';
 import { appStore } from '../../store/matchStore.ts';
 
 import styles from './MatchListPage.module.scss';

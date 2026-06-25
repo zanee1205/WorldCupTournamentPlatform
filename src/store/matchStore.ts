@@ -3,7 +3,7 @@ import { makeAutoObservable, runInAction } from 'mobx';
 import { getDashboard, savePrediction as savePredictionApi } from '../services/api.ts';
 
 import type { DashboardResponse } from '../../server/src/types/dashboardResponse.ts';
-import type { TournamentMatch } from '../../server/src/types/tournamentMatch.ts';
+import type { TournamentMatch } from '../../shared/types/tournamentMatch.ts';
 
 export type RefreshMode = 'initial' | 'background';
 

@@ -2,8 +2,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 import { toDateKey } from '../../shared/date.js';
-import type { MatchStage } from '../../server/src/types/matchstage.js';
-import type { TournamentMatch } from '../../server/src/types/tournamentMatch.js';
+import type { MatchStage } from '../../src/types/matchstage.js';
+import type { TournamentMatch } from '../../shared/types/tournamentMatch.js';
 import { toTeamNameEN } from './mappings/teamNameVIToEN.js';
 
 type ParsedMatchInput = Omit<TournamentMatch, 'prediction' | 'result' | 'score'>;

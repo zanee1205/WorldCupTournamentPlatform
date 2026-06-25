@@ -1,8 +1,8 @@
 import { setTimeout as delay } from 'node:timers/promises';
 
-import type { MatchStage } from '../types/matchstage.js';
+import type { MatchStage } from '../../../src/types/matchstage.js';
 import type { MatchResult } from '../types/resultInput.js';
-import type { TournamentMatch } from '../types/tournamentMatch.js';
+import type { TournamentMatch } from '../../../shared/types/tournamentMatch.js';
 
 import { toTeamNameEN } from '../mappings/teamNameVIToEN.js';
 

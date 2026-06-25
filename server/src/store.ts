@@ -1,15 +1,15 @@
 import mongoose from 'mongoose';
 
 import { buildScoreBreakdown } from '../../shared/scoring.js';
-import type { TournamentMatch } from '../../server/src/types/tournamentMatch.js';
+import type { TournamentMatch } from '../../shared/types/tournamentMatch.js';
 import type { MatchPrediction } from '../../server/src/types/predictionInput.js';
 import type { MatchResult } from '../../server/src/types/resultInput.js';
-import type { ScoreLedgerEntry } from '../../server/src/types/scoreLedgerEntry.js';
-import type { DashboardSummary } from '../../server/src/types/dashboardSummary.js';
+import type { ScoreLedgerEntry } from '../../src/types/scoreLedgerEntry.js';
+import type { DashboardSummary } from '../../src/types/dashboardSummary.js';
 import type { DashboardResponse } from './types/dashboardResponse.js';
-import type { PlayerListItem } from './types/playerListItem.js';
-import type { GroupStandingBoard, GroupStandingTeam } from './types/groupStanding.js';
-import type { TeamLineup, LineupPlayer, ReplacementPlayer } from './types/teamLineup.js';
+import type { PlayerListItem } from '../../src/types/playerListItem.js';
+import type { GroupStandingBoard, GroupStandingTeam } from '../../shared/types/groupStanding.js';
+import type { TeamLineup, LineupPlayer, ReplacementPlayer } from '../../shared/types/teamLineup.js';
 
 import { formatDateKey } from '../../shared/date.js';
 import { fetchWorldcup2026Matches } from './fetch/worldcup2026.js';
@@ -569,7 +569,7 @@ export class TournamentRepository {
 
     async listPlayers(): Promise<PlayerListItem[]> {
         if (!this.useMongo) {
-          throw new Error('Chức năng danh sách cầu thủ cần MongoDB collection players.');
+            throw new Error('Chức năng danh sách cầu thủ cần MongoDB collection players.');
         }
 
         const playerCollection = mongoose.connection.collection<PlayerDocument>('players');

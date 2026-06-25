@@ -1,7 +1,7 @@
-import { MatchPrediction } from './predictionInput.js';
-import { MatchResult } from './resultInput.js';
+import { MatchPrediction } from '../../server/src/types/predictionInput.js';
+import { MatchResult } from '../../server/src/types/resultInput.js';
 import { ScoreBreakdown } from './scoreBreakdown.js';
-import { MatchStage } from './matchstage.js';
+import { MatchStage } from '../../src/types/matchstage.js';
 
 export interface TournamentMatch {
   id: number;

@@ -1,6 +1,6 @@
 import express from 'express';
 import type { TournamentRepository } from '../store.js';
-import { createHighlightService } from '../services/highlightService.js';
+import { createHighlightService } from '../services/highlightVideoService.js';
 
 export default function createHighlightRouter(repository: TournamentRepository) {
     const router = express.Router();

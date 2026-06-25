@@ -1,5 +1,5 @@
-import type { MatchStage } from '../server/src/types/matchstage.ts';
-import type { MatchTrend, ScoreBreakdown } from '../server/src/types/scoreBreakdown.ts';
+import type { MatchStage } from '../src/types/matchstage.js';
+import type { MatchTrend, ScoreBreakdown } from './types/scoreBreakdown.js';
 import type { MatchPrediction } from '../server/src/types/predictionInput.ts';
 import type { MatchResult } from '../server/src/types/resultInput.js';
 

@@ -15,7 +15,7 @@ import { PlayerListPage } from './pages/playerlist/PlayerListPage.tsx';
 import styles from './App.module.scss';
 import { appStore } from './store/matchStore.ts';
 
-import type { TournamentMatch } from '../server/src/types/tournamentMatch.ts';
+import type { TournamentMatch } from '../shared/types/tournamentMatch.ts';
 
 const { Content } = Layout;
 

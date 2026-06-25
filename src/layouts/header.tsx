@@ -1,13 +1,15 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Button, Drawer, Layout, Menu } from 'antd';
 import { MenuOutlined } from '@ant-design/icons';
 
 import NotificationBell from '../components/NotificationSide/NotificationBell.tsx';
 import styles from '../App.module.scss';
+import logo from '../assets/logo.png';
+import { useBreakpoint } from '../hooks/useViewport.ts';
 
 import type { DashboardResponse } from '../../server/src/types/dashboardResponse.ts';
-import type { TournamentMatch } from '../../server/src/types/tournamentMatch.ts';
+import type { TournamentMatch } from '../../shared/types/tournamentMatch.ts';
 
 const { Header } = Layout;
 
@@ -26,17 +28,7 @@ export function AppHeader({ dashboard, onOpenMatch }: AppHeaderProps) {
   }, [location.pathname]);
 
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [isMobile, setIsMobile] = useState<boolean>(typeof window !== 'undefined' ? window.innerWidth <= 768 : false);
-
-  useEffect(() => {
-    function onResize() {
-      setIsMobile(window.innerWidth <= 768);
-    }
-
-    onResize();
-    window.addEventListener('resize', onResize);
-    return () => window.removeEventListener('resize', onResize);
-  }, []);
+  const isMobile = useBreakpoint(768);
 
   const navItems = useMemo(
     () => [
@@ -52,7 +44,7 @@ export function AppHeader({ dashboard, onOpenMatch }: AppHeaderProps) {
   return (
     <Header className={styles.appHeader}>
       <div className={styles.brand}>
-        <img src="../assets/logo.png" alt="logo" className={styles.brandMark} />
+        <img src={logo} alt="logo" className={styles.brandMark} />
         <span className={styles.brandText}>Tournament Platform</span>
       </div>
 

@@ -2,8 +2,8 @@ import { makeAutoObservable, runInAction } from 'mobx';
 
 import { getPlayers, getTeamLineup } from '../services/api.ts';
 
-import type { PlayerListItem } from '../../server/src/types/playerListItem.ts';
-import type { TeamLineup } from '../../server/src/types/teamLineup.ts';
+import type { PlayerListItem } from '../types/playerListItem.ts';
+import type { TeamLineup } from '../../shared/types/teamLineup.ts';
 
 function formatError(error: unknown, fallback: string) {
   return error instanceof Error ? error.message : fallback;

@@ -1,7 +1,7 @@
-import {  DashboardSummary } from "./dashboardSummary.js";
-import { GroupStandingBoard } from "./groupStanding.js";
-import { ScoreLedgerEntry } from "./scoreLedgerEntry.js";
-import { TournamentMatch } from "./tournamentMatch.js";
+import { DashboardSummary } from "../../../src/types/dashboardSummary.js";
+import { GroupStandingBoard } from "../../../shared/types/groupStanding.js";
+import { ScoreLedgerEntry } from "../../../src/types/scoreLedgerEntry.js";
+import { TournamentMatch } from "../../../shared/types/tournamentMatch.js";
 
 export interface DashboardResponse {
   summary: DashboardSummary;

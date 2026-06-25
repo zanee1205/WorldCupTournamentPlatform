@@ -7,9 +7,9 @@ import { getStageScore } from '../../../shared/scoring.ts';
 import styles from './MatchDrawer.module.scss';
 import { TeamLineupTrigger } from '../MatchLineup/TeamLineupTrigger.tsx';
 import { VideoHighlights } from '../VideoHighlight/VideoHighlights.tsx';
-import { apiPath } from '../../services/api.ts';
+import { askAiQuestion } from '../../services/aiService.ts';
 
-import type { TournamentMatch } from '../../../server/src/types/tournamentMatch.ts';
+import type { TournamentMatch } from '../../../shared/types/tournamentMatch.ts';
 import type { MatchPrediction } from '../../../server/src/types/predictionInput.ts';
 
 type MatchDrawerProps = {
@@ -30,17 +30,12 @@ export function MatchDrawer({ open, match, readOnly, onClose, onSavePrediction }
     if (!aiQuestion.trim() || !match) return;
     setAiLoading(true);
     try {
-      const response = await fetch(apiPath('/api/ai/ask'), {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          question: aiQuestion,
-          matchTitle: match.title,
-          stageLabel: match.stageLabel,
-        }),
+      const answer = await askAiQuestion({
+        question: aiQuestion,
+        matchTitle: match.title,
+        stageLabel: match.stageLabel,
       });
-      const data = await response.json();
-      setAiAnswer(data.answer);
+      setAiAnswer(answer);
     } catch {
       setAiAnswer('Không thể kết nối được hệ thống AI, thử lại sau.');
     } finally {
@@ -58,7 +53,6 @@ export function MatchDrawer({ open, match, readOnly, onClose, onSavePrediction }
 
   const stageScore = match ? getStageScore(match.stage) : null;
 
-  // Parse tên đội nếu type không có homeTeam/awayTeam riêng
   const titleTeams = match?.title?.split(' vs ') ?? ['', ''];
   const homeTeam = match?.homeLabel ?? titleTeams[0] ?? '';
   const awayTeam = match?.awayLabel ?? titleTeams[1] ?? '';
@@ -88,16 +82,17 @@ export function MatchDrawer({ open, match, readOnly, onClose, onSavePrediction }
       {!match ? null : (
         <div className={styles.drawerShell}>
           <Space direction="vertical" size={16} style={{ width: '100%' }}>
-
-            {/* MATCH HERO */}
             <div className={styles.matchHero}>
               <div className={styles.stageTag}>
                 <TrophyOutlined />
-                {match.stageLabel}{match.groupLabel ? ` · ${match.groupLabel}` : ''}
+                {match.stageLabel}
+                {match.groupLabel ? ` · ${match.groupLabel}` : ''}
               </div>
               <div className={styles.matchTeams}>
                 <div className={styles.teamBlock}>
-                  <div className={styles.teamName}><TeamLineupTrigger name={homeTeam} size={40} /></div>
+                  <div className={styles.teamName}>
+                    <TeamLineupTrigger name={homeTeam} size={40} />
+                  </div>
                   <div className={styles.teamCode}>HOME</div>
                 </div>
                 <div className={styles.vsBlock}>
@@ -114,21 +109,18 @@ export function MatchDrawer({ open, match, readOnly, onClose, onSavePrediction }
                   )}
                 </div>
                 <div className={styles.teamBlock}>
-                  <div className={styles.teamName}><TeamLineupTrigger name={awayTeam} size={40} /></div>
+                  <div className={styles.teamName}>
+                    <TeamLineupTrigger name={awayTeam} size={40} />
+                  </div>
                   <div className={styles.teamCode}>AWAY</div>
                 </div>
               </div>
               <div className={styles.matchMeta}>
-                <span className={styles.metaPill}>
-                  📅 {formatDateTime(match.dateKey, match.timeLabel)}
-                </span>
-                {match.venue && (
-                  <span className={styles.metaPill}>📍 {match.venue}</span>
-                )}
+                <span className={styles.metaPill}>📅 {formatDateTime(match.dateKey, match.timeLabel)}</span>
+                {match.venue && <span className={styles.metaPill}>📍 {match.venue}</span>}
               </div>
             </div>
 
-            {/* STATS GRID */}
             <div>
               <div className={styles.sectionTitle}>Thống kê</div>
               <div className={styles.statsGrid}>
@@ -163,7 +155,6 @@ export function MatchDrawer({ open, match, readOnly, onClose, onSavePrediction }
               </div>
             </div>
 
-            {/* GOALS */}
             <div>
               <div className={styles.sectionTitle}>Bàn thắng</div>
               {match.result?.goals?.length ? (
@@ -173,9 +164,7 @@ export function MatchDrawer({ open, match, readOnly, onClose, onSavePrediction }
                     .sort((a, b) => Number(a.minute) - Number(b.minute))
                     .map((goal, idx) => (
                       <div key={idx} className={styles.goalRow}>
-                        <span className={styles.goalMinute}>
-                          {goal.minute ? `${goal.minute}'` : '—'}
-                        </span>
+                        <span className={styles.goalMinute}>{goal.minute ? `${goal.minute}'` : '—'}</span>
                         <span className={`${styles.goalDot} ${goal.team === homeTeam ? styles.home : styles.away}`} />
                         <span className={styles.goalPlayer}>{goal.player}</span>
                         <span className={styles.goalTeam}>{goal.team}</span>
@@ -189,13 +178,12 @@ export function MatchDrawer({ open, match, readOnly, onClose, onSavePrediction }
               )}
             </div>
 
-            {/* PREDICTION FORM */}
-            {readOnly && (
-              <Alert type="warning" showIcon message="Đã khóa dự đoán sau khi đủ 104 trận." />
-            )}
+            {readOnly && <Alert type="warning" showIcon message="Đã khóa dự đoán sau khi đủ 104 trận." />}
 
             <div className={styles.predictionSection}>
-              <div className={styles.sectionTitle} style={{ marginBottom: 0 }}>Dự đoán tỉ số</div>
+              <div className={styles.sectionTitle} style={{ marginBottom: 0 }}>
+                Dự đoán tỉ số
+              </div>
               <Form
                 form={predictionForm}
                 layout="vertical"
@@ -235,10 +223,11 @@ export function MatchDrawer({ open, match, readOnly, onClose, onSavePrediction }
               </Form>
             </div>
 
-            {/* AI SECTION */}
             <div className={styles.aiSection}>
               <div className={styles.aiHeader}>
-                <div className={styles.aiIcon}><RobotOutlined /></div>
+                <div className={styles.aiIcon}>
+                  <RobotOutlined />
+                </div>
                 <div>
                   <div className={styles.aiTitle}>Phân tích AI</div>
                   <div className={styles.aiSubtitle}>Hỏi về đội hình, chiến thuật, dự đoán</div>
@@ -277,7 +266,6 @@ export function MatchDrawer({ open, match, readOnly, onClose, onSavePrediction }
               )}
             </div>
 
-            {/* HIGHLIGHTS */}
             <div>
               <div className={styles.sectionTitle}>Highlights</div>
               {match.result ? (
@@ -288,7 +276,6 @@ export function MatchDrawer({ open, match, readOnly, onClose, onSavePrediction }
                 </div>
               )}
             </div>
-
           </Space>
         </div>
       )}

@@ -2,7 +2,7 @@ import { Card, Space, Table, Tag, Typography } from 'antd';
 import type { TableColumnsType } from 'antd';
 import { observer } from 'mobx-react-lite';
 
-import type { GroupStandingTeam } from '../../../server/src/types/groupStanding.ts';
+import type { GroupStandingTeam } from '../../../shared/types/groupStanding.ts';
 import { TeamLineupTrigger } from '../../components/MatchLineup/TeamLineupTrigger.tsx';
 import { appStore } from '../../store/matchStore.ts';
 import styles from './LeaderboardPage.module.scss';

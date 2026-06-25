@@ -1,4 +1,4 @@
-import { apiPath } from './api.ts';
+import { apiPath } from './apiService.ts';
 
 export type HighlightVideo = {
   embed?: string;

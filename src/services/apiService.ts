@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-import type { AuthLoginInput, AuthRegisterInput, AuthSessionResponse } from '../types/auth.ts';
+import type { AuthLoginInput, AuthProfileUpdateInput, AuthRegisterInput, AuthSessionResponse } from '../types/auth.ts';
 import type { DashboardResponse } from '../../server/src/types/dashboardResponse.ts';
 import type { DashboardHomeResponse } from '../../server/src/types/dashboardHomeResponse.ts';
 import type { DashboardLeaderboardResponse } from '../../server/src/types/dashboardLeaderboardResponse.ts';
@@ -12,9 +12,6 @@ import type { PlayerListItem } from '../types/playerListItem.ts';
 import type { TeamLineup } from '../../shared/types/teamLineup.ts';
 import type { TournamentMatch } from '../../shared/types/tournamentMatch.ts';
 
-// Read API base from Vite env. If not provided, fall back to relative `/api`.
-// This keeps local dev, same-origin deploys, and reverse-proxied setups working
-// without hardcoding a specific production host.
 const rawApi = (import.meta.env.VITE_API_URL as string) ?? '';
 
 let sanitized = rawApi?.trim() ?? '';
@@ -83,6 +80,11 @@ export async function register(payload: AuthRegisterInput) {
 
 export async function logout() {
   const response = await http.post('/auth/logout');
+  return response.data;
+}
+
+export async function updateMyProfile(payload: AuthProfileUpdateInput) {
+  const response = await http.patch<AuthSessionResponse>('/auth/me', payload);
   return response.data;
 }
 

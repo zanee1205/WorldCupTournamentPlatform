@@ -1,0 +1,304 @@
+.editPage {
+    position: relative;
+    min-height: calc(100vh - 78px);
+    padding: 32px 16px 48px;
+    overflow: hidden;
+
+    &::before,
+    &::after {
+        content: '';
+        position: absolute;
+        inset: auto;
+        border-radius: 999px;
+        filter: blur(24px);
+        pointer-events: none;
+        opacity: 0.8;
+    }
+
+    &::before {
+        width: 280px;
+        height: 280px;
+        top: 30px;
+        right: -100px;
+        background: radial-gradient(circle, rgba(34, 197, 94, 0.25), transparent 70%);
+    }
+
+    &::after {
+        width: 340px;
+        height: 340px;
+        bottom: -140px;
+        left: -100px;
+        background: radial-gradient(circle, rgba(59, 130, 246, 0.16), transparent 70%);
+    }
+}
+
+.pageInner {
+    position: relative;
+    z-index: 1;
+    max-width: 1280px;
+    margin: 0 auto;
+}
+
+.pageHeading {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.eyebrow {
+    display: inline-block;
+    margin-bottom: 8px;
+    color: rgba(125, 211, 252, 0.95);
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.title {
+    margin: 0 !important;
+    color: #fff !important;
+    font-size: clamp(28px, 4vw, 42px) !important;
+    line-height: 1.05 !important;
+}
+
+.subtitle {
+    max-width: 760px;
+    margin: 12px 0 0;
+    color: rgba(226, 232, 240, 0.72) !important;
+    font-size: 15px;
+}
+
+.liveTag {
+    margin-top: 8px;
+    border: 0;
+    padding: 8px 14px;
+    border-radius: 999px;
+    font-weight: 700;
+}
+
+.summaryCard,
+.formCard {
+    border: 1px solid rgba(148, 163, 184, 0.16);
+    background:
+        linear-gradient(180deg, rgba(9, 12, 24, 0.94) 0%, rgba(8, 11, 20, 0.88) 100%);
+    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.38);
+    backdrop-filter: blur(18px);
+}
+
+.summaryCard {
+    position: sticky;
+    top: 24px;
+}
+
+.avatarShell {
+    display: grid;
+    place-items: center;
+    padding: 16px 0 10px;
+}
+
+.avatarFrame {
+    display: grid;
+    place-items: center;
+    width: 128px;
+    height: 128px;
+    border-radius: 50%;
+    padding: 6px;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.95), rgba(168, 85, 247, 0.95));
+    box-shadow: 0 12px 30px rgba(59, 130, 246, 0.25);
+}
+
+.avatar {
+    border: 4px solid rgba(8, 11, 20, 0.95);
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.08);
+    background: #0f172a;
+    color: #fff;
+    font-weight: 800;
+}
+
+.avatarFallback {
+    background: linear-gradient(135deg, #0f172a, #1e293b) !important;
+}
+
+.profileIdentity {
+    text-align: center;
+    padding: 18px 0 8px;
+}
+
+.displayName {
+    margin: 0 !important;
+    color: #fff !important;
+    font-size: 26px !important;
+}
+
+.accountName {
+    display: block;
+    margin-top: 4px;
+    color: rgba(125, 211, 252, 0.95);
+    font-weight: 700;
+    letter-spacing: 0.02em;
+}
+
+.identityText {
+    margin: 10px 0 0;
+    color: rgba(226, 232, 240, 0.68) !important;
+}
+
+.formCard {
+    position: relative;
+    overflow: hidden;
+}
+
+.formHeader {
+    margin-bottom: 20px;
+}
+
+.sectionTitle {
+    margin: 0 !important;
+    color: #fff !important;
+}
+
+.sectionSubtitle {
+    display: block;
+    margin-top: 6px;
+    color: rgba(226, 232, 240, 0.68) !important;
+}
+
+.profileForm {
+    :global(.ant-form-item-label > label) {
+        color: rgba(226, 232, 240, 0.86);
+        font-weight: 600;
+    }
+
+    :global(.ant-input),
+    :global(.ant-input-affix-wrapper) {
+        background: rgba(15, 23, 42, 0.9);
+        border-color: rgba(148, 163, 184, 0.16);
+        color: #fff;
+    }
+
+    :global(.ant-input::placeholder) {
+        color: rgba(148, 163, 184, 0.72);
+    }
+
+    :global(.ant-input-affix-wrapper input) {
+        background: transparent;
+        color: #fff;
+    }
+
+    :global(.ant-form-item-explain),
+    :global(.ant-form-item-extra) {
+        color: rgba(226, 232, 240, 0.56);
+    }
+}
+
+.avatarUploadCard {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    padding: 18px;
+    border-radius: 18px;
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(2, 6, 23, 0.96));
+    border: 1px solid rgba(148, 163, 184, 0.14);
+}
+
+.avatarUploadPreview {
+    flex: 0 0 auto;
+    display: grid;
+    place-items: center;
+    width: 112px;
+    height: 112px;
+    border-radius: 28px;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.22), rgba(34, 197, 94, 0.16));
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+}
+
+.avatarUploadMeta {
+    min-width: 0;
+    flex: 1;
+}
+
+.uploadTitle {
+    display: block;
+    color: #fff;
+    font-weight: 700;
+    font-size: 15px;
+}
+
+.uploadDescription {
+    margin: 8px 0 14px;
+    color: rgba(226, 232, 240, 0.72) !important;
+}
+
+.helperPanel {
+    margin-top: 24px;
+    padding: 18px 20px;
+    border-radius: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    background: linear-gradient(135deg, rgba(14, 165, 233, 0.16), rgba(34, 197, 94, 0.16));
+    border: 1px solid rgba(125, 211, 252, 0.14);
+}
+
+.helperLabel {
+    display: inline-block;
+    color: rgba(125, 211, 252, 0.9);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.helperText {
+    margin: 8px 0 0;
+    color: rgba(226, 232, 240, 0.78) !important;
+}
+
+.actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+@media (max-width: 992px) {
+    .editPage {
+        min-height: auto;
+        padding: 24px 12px 40px;
+    }
+
+    .summaryCard {
+        position: static;
+    }
+}
+
+@media (max-width: 768px) {
+    .pageHeading,
+    .helperPanel {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .avatarUploadCard {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .avatarUploadPreview {
+        width: 100%;
+        height: 136px;
+        border-radius: 20px;
+    }
+
+    .actions {
+        justify-content: stretch;
+    }
+
+    .actions :global(.ant-btn) {
+        width: 100%;
+    }
+}

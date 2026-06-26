@@ -15,7 +15,7 @@ const { Header } = Layout;
 export const AppHeader = observer(function AppHeader() {
   const navigate = useNavigate();
   const summary = appStore.summary;
-  const accountName = authStore.user?.account || authStore.user?.email || 'Tài khoản';
+  const accountName = authStore.user?.fullName || authStore.user?.account || authStore.user?.email || 'Tài khoản';
 
   const accountMenuItems = useMemo<MenuProps['items']>(
     () => [
@@ -24,6 +24,7 @@ export const AppHeader = observer(function AppHeader() {
       { key: 'list', label: 'List' },
       { key: 'dashboard', label: 'Dashboard' },
       { key: 'matches', label: 'Matches' },
+      { key: 'profile', label: 'Your Profile' },
       { type: 'divider' },
       { key: 'logout', danger: true, label: 'Đăng xuất' },
     ],
@@ -42,6 +43,7 @@ export const AppHeader = observer(function AppHeader() {
       list: '/list',
       dashboard: '/dashboard',
       matches: '/matches',
+      profile: '/profile',
     };
 
     const targetRoute = routes[key];
@@ -66,7 +68,7 @@ export const AppHeader = observer(function AppHeader() {
           <Button type="text" className={styles.accountButton}>
             <Space size={8} align="center">
               <span className={styles.accountName}>
-                Welcome back, <span style={{ color: '#fcd34d' }}> <b>{accountName}</b> </span> !
+                Welcome back, <span style={{ color: '#fcd34d' }}><b>{accountName}</b></span> !
               </span>
               <DownOutlined />
             </Space>

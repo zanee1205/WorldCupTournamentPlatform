@@ -6,11 +6,12 @@ import {
   getAuthSession,
   login as loginApi,
   logout as logoutApi,
+  updateMyProfile as updateMyProfileApi,
   register as registerApi,
   setUnauthorizedHandler,
 } from '../services/apiService.ts';
 
-import type { AuthLoginInput, AuthRegisterInput, AuthSessionResponse, AuthUser } from '../types/auth.ts';
+import type { AuthLoginInput, AuthProfileUpdateInput, AuthRegisterInput, AuthSessionResponse, AuthUser } from '../types/auth.ts';
 import type { AuthStoreContract, AuthStatus } from './authStore.types.ts';
 
 function formatCountdown(milliseconds: number) {
@@ -118,8 +119,10 @@ export class AuthStore implements AuthStoreContract {
     }, 1000);
   }
 
-  private setSession(session: AuthSessionResponse, reason: string) {
-    appStore.reset();
+  private applySession(session: AuthSessionResponse, reason: string, resetApp = true) {
+    if (resetApp) {
+      appStore.reset();
+    }
 
     runInAction(() => {
       this.user = session.user;
@@ -173,7 +176,7 @@ export class AuthStore implements AuthStoreContract {
 
     const request = getAuthSession()
       .then((session) => {
-        this.setSession(session, 'bootstrap');
+        this.applySession(session, 'bootstrap');
         return session.user;
       })
       .catch((error) => {
@@ -209,7 +212,7 @@ export class AuthStore implements AuthStoreContract {
 
     try {
       const session = await loginApi(payload);
-      this.setSession(session, 'login');
+      this.applySession(session, 'login');
       return session.user;
     } catch (error) {
       this.markUnauthenticated('login_failed');
@@ -235,7 +238,7 @@ export class AuthStore implements AuthStoreContract {
 
     try {
       const session = await registerApi(payload);
-      this.setSession(session, 'register');
+      this.applySession(session, 'register');
       return session.user;
     } catch (error) {
       this.markUnauthenticated('register_failed');
@@ -261,7 +264,16 @@ export class AuthStore implements AuthStoreContract {
       this.markUnauthenticated('logout');
     }
   }
+
+  async updateProfile(payload: AuthProfileUpdateInput) {
+    runInAction(() => {
+      this.errorMessage = null;
+    });
+
+    const session = await updateMyProfileApi(payload);
+    this.applySession(session, 'profile_update', false);
+    return session.user;
+  }
 }
 
 export const authStore = new AuthStore();
-

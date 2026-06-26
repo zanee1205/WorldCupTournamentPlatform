@@ -12,7 +12,9 @@ import { LoginPage } from '../pages/auth/LoginPage.tsx';
 import { MatchListPage } from '../pages/matchlist/MatchListPage.tsx';
 import { PlayerListPage } from '../pages/playerlist/PlayerListPage.tsx';
 import { RegisterPage } from '../pages/auth/RegisterPage.tsx';
+import { ProfilePage } from '../pages/profileUser/ProfilePage.tsx';
 import { authStore } from '../store/authStore.ts';
+import { EditProfilePage } from '../pages/profileUser/EditProfilePage.tsx';
 
 const ProtectedRoute = observer(function ProtectedRoute() {
   if (authStore.status === 'checking') {
@@ -83,6 +85,18 @@ export const routers = createBrowserRouter([
               {
                 path: 'matches',
                 element: <MatchListPage />,
+              },
+              {
+                path: 'profile',
+                element: <ProfilePage />,
+              },
+              {
+                path: 'profile/edit',
+                element: <EditProfilePage />,
+              },
+              {
+                path: 'editprofile',
+                element: <Navigate to="/profile/edit" replace />,
               },
               {
                 path: '*',

@@ -1,4 +1,4 @@
-﻿import type { AuthLoginInput, AuthRegisterInput, AuthUser } from '../types/auth.ts';
+import type { AuthLoginInput, AuthProfileUpdateInput, AuthRegisterInput, AuthUser } from '../types/auth.ts';
 
 export type AuthStatus = 'checking' | 'authenticated' | 'unauthenticated' | 'error';
 
@@ -14,8 +14,9 @@ export interface AuthStoreActions {
   bootstrap(): Promise<AuthUser | null>;
   login(payload: AuthLoginInput): Promise<AuthUser>;
   register(payload: AuthRegisterInput): Promise<AuthUser>;
+  updateProfile(payload: AuthProfileUpdateInput): Promise<AuthUser>;
   logout(): Promise<void>;
-  markUnauthenticated(): void;
+  markUnauthenticated(reason?: unknown): void;
   isAuthenticated(): boolean;
 }
 

@@ -11,8 +11,8 @@ type AppErrorStateProps = {
 };
 
 export function AppErrorState({
-    message = 'KhÃ´ng táº£i Ä‘Æ°á»£c dá»¯ liá»‡u.',
-    description = 'Vui lÃ²ng thá»­ láº¡i.',
+    message = 'Đã xảy ra lỗi',
+    description = 'Vui lòng thử lại',
     onRetry,
 }: AppErrorStateProps) {
     return (

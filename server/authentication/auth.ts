@@ -2,7 +2,9 @@ import crypto from 'crypto';
 import express from 'express';
 import mongoose from 'mongoose';
 
-import type { AuthLoginInput, AuthRegisterInput, AuthSessionResponse, AuthUser } from '../../src/types/auth.js';
+import type { AuthLoginInput, AuthProfileUpdateInput, AuthRegisterInput, AuthSessionResponse, AuthUser } from '../../src/types/auth.js';
+import type { JwtPayload, AuthTokenType } from '../src/types/jwtPayload.js';
+import type { UserDocument } from '../src/types/userDocument.js';
 
 const ACCESS_COOKIE = 'access_token';
 const REFRESH_COOKIE = 'refresh_token';
@@ -15,25 +17,6 @@ const PASSWORD_DIGEST = 'sha512';
 const ACCESS_SECRET = process.env.JWT_ACCESS_SECRET?.trim() || process.env.JWT_SECRET?.trim() || 'dev-access-secret';
 const REFRESH_SECRET = process.env.JWT_REFRESH_SECRET?.trim() || process.env.JWT_SECRET?.trim() || 'dev-refresh-secret';
 
-type AuthTokenType = 'access' | 'refresh';
-
-interface JwtPayload {
-  sub: string;
-  account: string;
-  email: string;
-  tokenType: AuthTokenType;
-  iat: number;
-  exp: number;
-}
-
-interface UserDocument {
-  account: string;
-  email: string;
-  passwordHash: string;
-  createdAt?: Date;
-  updatedAt?: Date;
-}
-
 type AuthResult = {
   user: AuthUser;
   accessToken: string;
@@ -45,6 +28,9 @@ const userSchema = new mongoose.Schema<UserDocument>(
     account: { type: String, required: true, unique: true, index: true },
     email: { type: String, required: true, unique: true, index: true },
     passwordHash: { type: String, required: true },
+    avatar: { type: String, default: null },
+    fullName: { type: String, default: null },
+    phoneNumber: { type: String, default: null },
   },
   {
     versionKey: false,
@@ -190,11 +176,25 @@ function clearAuthCookies(response: express.Response) {
   response.clearCookie(REFRESH_COOKIE, options);
 }
 
+function toIsoString(value?: Date | string | null) {
+  if (!value) {
+    return undefined;
+  }
+
+  const date = value instanceof Date ? value : new Date(value);
+  return Number.isNaN(date.getTime()) ? undefined : date.toISOString();
+}
+
 function sanitizeUser(user: UserDocument & { _id: unknown }): AuthUser {
   return {
     id: String(user._id),
     account: user.account,
     email: user.email,
+    avatar: user.avatar ?? null,
+    fullName: user.fullName ?? null,
+    phoneNumber: user.phoneNumber ?? null,
+    createdAt: toIsoString(user.createdAt),
+    updatedAt: toIsoString(user.updatedAt),
   };
 }
 
@@ -247,6 +247,9 @@ async function createUser(payload: AuthRegisterInput) {
   const account = normalizeIdentifier(payload.account);
   const email = normalizeIdentifier(payload.email);
   const password = payload.password.trim();
+  const avatar = typeof payload.avatar === 'string' ? payload.avatar.trim() : '';
+  const fullName = typeof payload.fullName === 'string' ? payload.fullName.trim() : '';
+  const phoneNumber = typeof payload.phoneNumber === 'string' ? payload.phoneNumber.trim() : '';
 
   if (!account || !email || !password) {
     throw new Error('Thieu thong tin dang ky.');
@@ -265,13 +268,16 @@ async function createUser(payload: AuthRegisterInput) {
   }).lean<UserDocument & { _id: unknown }>();
 
   if (existing) {
-    throw new Error('Tai khoan hoac email da ton tai.');
+    throw new Error('Tài khoản hoặc Email đã tồn tại. Vui lòng thử lại.');
   }
 
   const created = await UserModel.create({
     account,
     email,
     passwordHash: hashPassword(password),
+    avatar: avatar || null,
+    fullName: fullName || null,
+    phoneNumber: phoneNumber || null,
   });
 
   return sanitizeUser(created.toObject() as UserDocument & { _id: unknown });
@@ -348,6 +354,9 @@ export function createAuthRouter() {
         account: typeof payload.account === 'string' ? payload.account : '',
         email: typeof payload.email === 'string' ? payload.email : '',
         password: typeof payload.password === 'string' ? payload.password : '',
+        avatar: typeof payload.avatar === 'string' ? payload.avatar : '',
+        fullName: typeof payload.fullName === 'string' ? payload.fullName : '',
+        phoneNumber: typeof payload.phoneNumber === 'string' ? payload.phoneNumber : '',
       });
 
       const tokens = issueAuthTokens(user);
@@ -396,6 +405,53 @@ export function createAuthRouter() {
       accessToken: res.locals.accessToken,
       accessTokenExpiresAt: res.locals.accessTokenExpiresAt,
     }));
+  });
+
+  router.patch('/me', requireAuth, async (req, res) => {
+    try {
+      const payload = req.body as Partial<AuthProfileUpdateInput>;
+      const updates: Partial<UserDocument> = {};
+
+      if (typeof payload.avatar === 'string') {
+        updates.avatar = payload.avatar.trim() || null;
+      } else if (payload.avatar === null) {
+        updates.avatar = null;
+      }
+
+      if (typeof payload.fullName === 'string') {
+        updates.fullName = payload.fullName.trim() || null;
+      } else if (payload.fullName === null) {
+        updates.fullName = null;
+      }
+
+      if (typeof payload.phoneNumber === 'string') {
+        updates.phoneNumber = payload.phoneNumber.trim() || null;
+      } else if (payload.phoneNumber === null) {
+        updates.phoneNumber = null;
+      }
+
+      const updated = await UserModel.findByIdAndUpdate(
+        res.locals.authUser.id,
+        { $set: updates },
+        { new: true, runValidators: true },
+      ).lean<UserDocument & { _id: unknown }>();
+
+      if (!updated) {
+        clearAuthCookies(res);
+        res.status(404).json({ message: 'Khong tim thay nguoi dung.' });
+        return;
+      }
+
+      const authUser = sanitizeUser(updated);
+      res.json(toAuthResponse({
+        user: authUser,
+        accessToken: res.locals.accessToken,
+        accessTokenExpiresAt: res.locals.accessTokenExpiresAt,
+      }));
+    } catch (error) {
+      console.error('[auth] profile update failed', error);
+      res.status(500).json({ message: 'Khong the cap nhat ho so.' });
+    }
   });
 
   router.post('/refresh', requireAuth, (_req, res) => {

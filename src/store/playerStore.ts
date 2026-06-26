@@ -20,7 +20,7 @@ export class PlayerStore {
   playersError: string | null = null;
   playersPromise: Promise<PlayerListItem[]> | null = null;
   teamLineupPromises = new Map<string, Promise<TeamLineup | null>>();
-  teamLineups = new Map<string, TeamLineup>();
+  teamLineups = new Map<string, TeamLineup | null>();
   teamLineupLoading = new Map<string, boolean>();
   teamLineupErrors = new Map<string, string | null>();
 

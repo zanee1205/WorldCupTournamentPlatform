@@ -13,6 +13,7 @@ import type { TeamLineup, LineupPlayer, ReplacementPlayer } from '../../shared/t
 
 import { formatDateKey } from '../../shared/date.js';
 import { fetchWorldcup2026Matches } from './fetch/worldcup2026.js';
+import { COUNTRY_FLAG_CODE } from './mappings/countryFlagCode.js';
 
 
 type MatchDocument = Omit<TournamentMatch, 'score'>;
@@ -106,6 +107,33 @@ function normalizeText(value: string): string {
         .replace(/\s+/g, ' ')
         .trim()
         .toLowerCase();
+}
+
+const NORMALIZED_COUNTRY_FLAG_CODE: Record<string, string> = Object.fromEntries(
+    Object.entries(COUNTRY_FLAG_CODE).map(([name, code]) => [normalizeText(name), code]),
+);
+
+function resolveTeamCode(teamName: string): string {
+    const direct = COUNTRY_FLAG_CODE[teamName];
+    if (direct) {
+        return direct;
+    }
+
+    const normalized = normalizeText(teamName);
+    const inferredCode = normalized.slice(0, 3).toUpperCase();
+    return (NORMALIZED_COUNTRY_FLAG_CODE[normalized] ?? inferredCode) || 'UNK';
+}
+
+function buildFallbackTeamLineup(teamName: string, formation = '4-4-2', formationSource = 'fallback'): TeamLineup {
+    return {
+        teamName,
+        teamCode: resolveTeamCode(teamName),
+        group: 'TBD',
+        formation,
+        formationSource,
+        players: [],
+        squadSize: 0,
+    };
 }
 
 function escapeRegex(value: string): string {
@@ -609,27 +637,11 @@ export class TournamentRepository {
     async getTeamLineup(teamName: string): Promise<TeamLineup> {
         const cleanedName = teamName.trim();
         if (!cleanedName || cleanedName.toLowerCase() === 'null') {
-            return {
-                teamName: 'Unknown',
-                teamCode: 'UNK',
-                group: 'TBD',
-                formation: '4-4-2',
-                formationSource: 'fallback',
-                players: [],
-                squadSize: 0,
-            };
+            return buildFallbackTeamLineup('Unknown');
         }
 
         if (!this.useMongo) {
-            return {
-                teamName: cleanedName,
-                teamCode: cleanedName.toUpperCase().slice(0, 3),
-                group: 'TBD',
-                formation: '4-4-2',
-                formationSource: 'fallback',
-                players: [],
-                squadSize: 0,
-            };
+            return buildFallbackTeamLineup(cleanedName);
         }
 
         const normalizedInput = normalizeText(cleanedName);
@@ -654,7 +666,7 @@ export class TournamentRepository {
                 .then((allPlayers) => allPlayers.filter((player) => normalizeText(player.teamName) === normalizedInput));
 
         if (exactPlayers.length === 0) {
-            throw new Error(`Không tìm thấy cầu thủ của đội "${cleanedName}".`);
+            return buildFallbackTeamLineup(cleanedName);
         }
 
         const firstPlayer = exactPlayers[0];

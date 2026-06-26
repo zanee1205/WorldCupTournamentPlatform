@@ -70,7 +70,7 @@ export function createApp(repository: TournamentRepository) {
       response.json(await repository.getTeamLineup(teamName));
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Không thể tải đội hình.';
-      response.status(404).json({ message });
+      response.status(500).json({ message });
     }
   });
 

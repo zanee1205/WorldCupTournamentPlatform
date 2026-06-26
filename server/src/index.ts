@@ -1,4 +1,8 @@
 import 'dotenv/config';
+import { existsSync } from 'fs';
+import path from 'path';
+import express from 'express';
+
 import aiRouter from './routes/ai.js';
 import highlightRouter from './routes/highlightRouter.js';
 
@@ -13,6 +17,16 @@ async function bootstrap() {
 
   app.use('/api/ai', aiRouter);
   app.use('/api/highlights', highlightRouter(repository));
+
+  const distPath = path.resolve(process.cwd(), 'dist');
+  const indexPath = path.join(distPath, 'index.html');
+
+  if (existsSync(indexPath)) {
+    app.use(express.static(distPath));
+    app.get(/^\/(?!api(?:\/|$)).*/, (_request, response) => {
+      response.sendFile(indexPath);
+    });
+  }
 
   app.listen(port, () => {
     console.log(`API server is running on http://localhost:${port}`);

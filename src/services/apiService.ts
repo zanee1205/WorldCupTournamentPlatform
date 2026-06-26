@@ -7,29 +7,14 @@ import type { TeamLineup } from '../../shared/types/teamLineup.ts';
 import type { TournamentMatch } from '../../shared/types/tournamentMatch.ts';
 
 // Read API base from Vite env. If not provided, fall back to relative `/api`.
+// This keeps local dev, same-origin deploys, and reverse-proxied setups working
+// without hardcoding a specific production host.
 const rawApi = (import.meta.env.VITE_API_URL as string) ?? '';
 
-// When building for production and no `VITE_API_URL` is set, prefer the
-// Render-hosted backend so the deployed frontend talks to the Render server.
-const DEFAULT_RENDER_API = 'https://worldcuptournamentplatform.onrender.com';
-
-// Keep blocklist empty by default to allow calling Render host. If you need to
-// block specific hosts again, add them here.
-const BLOCKLIST: string[] = [];
-
 let sanitized = rawApi?.trim() ?? '';
-if ((!sanitized || sanitized === '') && import.meta.env.PROD) {
-  sanitized = DEFAULT_RENDER_API;
-}
 
-const lower = sanitized.toLowerCase();
-if (sanitized && BLOCKLIST.some((b) => lower.includes(b))) {
-  // eslint-disable-next-line no-console
-  console.warn('[api] Ignoring VITE_API_URL because it points to a blocked service:', sanitized);
-  sanitized = '';
-}
-
-// Normalize: remove trailing slash and strip any trailing `/api` segment so callers build endpoints consistently.
+// Normalize: remove trailing slash and strip any trailing `/api` segment so
+// callers build endpoints consistently.
 sanitized = sanitized.replace(/\/$/, '');
 if (sanitized.toLowerCase().endsWith('/api')) {
   sanitized = sanitized.replace(/\/api$/i, '');

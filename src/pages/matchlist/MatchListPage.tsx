@@ -160,12 +160,12 @@ export const MatchListPage = observer(function MatchListPage() {
     setPagination((p) => ({ ...p, total: filteredMatches.length, current: 1 }));
   }, [filteredMatches.length]);
 
-  if (appStore.matchListLoading && matches.length === 0) {
-    return <AppLoadingState message="Đang tải danh sách trận..." />;
+  if (appStore.matchListErrorMessage && matches.length === 0) {
+        return <AppErrorState description={appStore.matchListErrorMessage} onRetry={() => {appStore.loadMatchList('initial')}} />;
   }
 
-  if (appStore.matchListErrorMessage && matches.length === 0) {
-    return <AppErrorState description={appStore.matchListErrorMessage} onRetry={() => {appStore.loadMatchList('initial')}} />;
+  if (!appStore.matchListLoaded && matches.length === 0) {
+    return <AppLoadingState message="Đang tải danh sách trận..." />;
   }
 
   return (

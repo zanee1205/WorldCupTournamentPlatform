@@ -5,6 +5,7 @@ import express from 'express';
 
 import aiRouter from './routes/ai.js';
 import highlightRouter from './routes/highlightRouter.js';
+import { requireAuth } from '../authentication/auth.js';
 
 import { createApp } from './app.js';
 import { createRepository } from './store.js';
@@ -15,8 +16,8 @@ async function bootstrap() {
   const repository = await createRepository();
   const app = createApp(repository);
 
-  app.use('/api/ai', aiRouter);
-  app.use('/api/highlights', highlightRouter(repository));
+  app.use('/api/ai', requireAuth, aiRouter);
+  app.use('/api/highlights', requireAuth, highlightRouter(repository));
 
   const distPath = path.resolve(process.cwd(), 'dist');
   const indexPath = path.join(distPath, 'index.html');

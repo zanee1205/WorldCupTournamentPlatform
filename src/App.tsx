@@ -3,25 +3,20 @@ import { observer } from 'mobx-react-lite';
 
 import { AppErrorState } from './components/AppState/AppErrorState.tsx';
 import { AppLoadingState } from './components/AppState/AppLoadingState.tsx';
-import { WorldcupDataProvider } from './context/WorldcupDataContext.tsx';
 import { useAppBootstrap } from './hooks/useAppBootstrap.ts';
 import { routers } from './routers/index.tsx';
-import { appStore } from './store/matchStore.ts';
+import { authStore } from './store/authStore.ts';
 
 export default observer(function App() {
   useAppBootstrap();
 
-  if (appStore.shellLoading && !appStore.summary) {
-    return <AppLoadingState />;
+  if (authStore.status === 'checking') {
+    return <AppLoadingState message="Đang xác thực phiên đăng nhập..." />;
   }
 
-  if (!appStore.summary) {
-    return <AppErrorState description={appStore.shellErrorMessage ?? 'Vui lòng thử lại.'} onRetry={() => { appStore.loadShell('initial'); }} />;
+  if (authStore.status === 'error') {
+    return <AppErrorState description={authStore.errorMessage ?? 'Vui lòng thử lại.'} onRetry={() => {authStore.bootstrap()}} />;
   }
 
-  return (
-    <WorldcupDataProvider>
-      <RouterProvider router={routers} />
-    </WorldcupDataProvider>
-  );
+  return <RouterProvider router={routers} />;
 });

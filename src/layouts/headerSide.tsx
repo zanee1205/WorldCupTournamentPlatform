@@ -1,44 +1,58 @@
-import { useMemo, useState } from 'react';
+﻿import { useMemo } from 'react';
+import type { MenuProps } from 'antd';
+import { Button, Dropdown, Layout, Space } from 'antd';
+import { DownOutlined } from '@ant-design/icons';
 import { observer } from 'mobx-react-lite';
-import { Link, useLocation } from 'react-router-dom';
-import { Button, Drawer, Layout, Menu } from 'antd';
-import { MenuOutlined } from '@ant-design/icons';
+import { useNavigate } from 'react-router-dom';
 
-import NotificationBell from '../components/NotificationSide/NotificationBell.tsx';
-import styles from '../App.module.scss';
+import styles from './headerSide.module.scss';
 import logo from '../assets/logo.png';
-import { useBreakpoint } from '../hooks/useViewport.ts';
 import { appStore } from '../store/matchStore.ts';
+import { authStore } from '../store/authStore.ts';
 
 const { Header } = Layout;
 
 export const AppHeader = observer(function AppHeader() {
-  const location = useLocation();
+  const navigate = useNavigate();
   const summary = appStore.summary;
-  const selectedKey = useMemo(() => {
-    if (location.pathname.startsWith('/dashboard')) return 'dashboard';
-    if (location.pathname.startsWith('/leaderboard')) return 'leaderboard';
-    if (location.pathname.startsWith('/list')) return 'list';
-    return 'home';
-  }, [location.pathname]);
+  const accountName = authStore.user?.account || authStore.user?.email || 'Tài khoản';
 
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const isMobile = useBreakpoint(768);
+  const accountMenuItems = useMemo<MenuProps['items']>(
+    () => [
+      { key: 'home', label: 'Homepage' },
+      { key: 'leaderboard', label: 'Leaderboard' },
+      { key: 'list', label: 'List' },
+      { key: 'dashboard', label: 'Dashboard' },
+      { key: 'matches', label: 'Matches' },
+      { type: 'divider' },
+      { key: 'logout', danger: true, label: 'Đăng xuất' },
+    ],
+    [],
+  );
+
+  const handleAccountMenuClick: MenuProps['onClick'] = ({ key }) => {
+    if (key === 'logout') {
+      void authStore.logout();
+      return;
+    }
+
+    const routes: Record<string, string> = {
+      home: '/',
+      leaderboard: '/leaderboard',
+      list: '/list',
+      dashboard: '/dashboard',
+      matches: '/matches',
+    };
+
+    const targetRoute = routes[key];
+    if (targetRoute) {
+      navigate(targetRoute);
+    }
+  };
 
   if (!summary) {
     return null;
   }
-
-  const navItems = useMemo(
-    () => [
-      { key: 'home', label: <Link to="/">Homepage</Link> },
-      { key: 'leaderboard', label: <Link to="/leaderboard">Leaderboard</Link> },
-      { key: 'list', label: <Link style={{ padding: '0 35px ' }} to="/list">List</Link> },
-      { key: 'dashboard', label: <Link to="/dashboard">Dashboard</Link> },
-      { key: 'matches', label: <Link to="/matches">Matches</Link> },
-    ],
-    [],
-  );
 
   return (
     <Header className={styles.appHeader}>
@@ -47,44 +61,18 @@ export const AppHeader = observer(function AppHeader() {
         <span className={styles.brandText}>Tournament Platform</span>
       </div>
 
-      {isMobile ? (
-        <Button
-          type="text"
-          className={styles.mobileMenuBtn}
-          icon={<MenuOutlined style={{ color: '#fff', fontSize: 20 }} />}
-          onClick={() => setMobileOpen(true)}
-        />
-      ) : null}
-
-      {!isMobile ? (
-        <Menu
-          style={{ flex: 1, justifyContent: 'flex-end', minWidth: 300 }}
-          theme="dark"
-          mode="horizontal"
-          selectedKeys={[selectedKey]}
-          items={navItems}
-        />
-      ) : null}
-
       <div className={styles.headerActions}>
-        <NotificationBell />
+        <Dropdown menu={{ items: accountMenuItems, onClick: handleAccountMenuClick }} trigger={['click']} placement="bottomRight">
+          <Button type="text" className={styles.accountButton}>
+            <Space size={8} align="center">
+              <span className={styles.accountName}>
+                Welcome back, <span style={{ color: '#fcd34d' }}> <b>{accountName}</b> </span> !
+              </span>
+              <DownOutlined />
+            </Space>
+          </Button>
+        </Dropdown>
       </div>
-
-      <Drawer
-        title={null}
-        placement="right"
-        onClose={() => setMobileOpen(false)}
-        open={mobileOpen}
-        bodyStyle={{ padding: 0 }}
-      >
-        <Menu
-          mode="inline"
-          theme="dark"
-          selectedKeys={[selectedKey]}
-          items={navItems}
-          onClick={() => setMobileOpen(false)}
-        />
-      </Drawer>
     </Header>
   );
 });

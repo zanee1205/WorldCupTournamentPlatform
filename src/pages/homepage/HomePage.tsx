@@ -35,12 +35,14 @@ export const HomePage = observer(function HomePage() {
     void appStore.loadHome('initial');
   }, []);
 
-  if (appStore.homeLoading && !calendar) {
-    return <AppLoadingState message="Đang tải lịch thi đấu..." />;
+  if (appStore.homeErrorMessage && !calendar) {
+    return <AppErrorState description={appStore.homeErrorMessage} onRetry={() => { appStore.loadHome('initial') }} />;
   }
 
-  if (!calendar) {
-    return <AppErrorState description={appStore.homeErrorMessage ?? 'Vui lòng thử lại.'} onRetry={() => {appStore.loadHome('initial')}} />;
+  if (!calendar) return null;
+
+  if (!appStore.homeLoaded && !calendar) {
+    return <AppLoadingState message="Đang tải lịch thi đấu..." />;
   }
 
   if (!summary) {

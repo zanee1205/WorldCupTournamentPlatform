@@ -178,7 +178,7 @@ export class MatchStore implements MatchStoreContract {
       })
       .catch((error: unknown) => {
         runInAction(() => {
-          this.shellErrorMessage = normalizeError(error, 'KhÃ´ng táº£i Ä‘Æ°á»£c dá»¯ liá»‡u dashboard.');
+          this.shellErrorMessage = normalizeError(error, 'Không tải được dữ liệu dashboard.');
         });
 
         throw error;
@@ -233,7 +233,7 @@ export class MatchStore implements MatchStoreContract {
       })
       .catch((error: unknown) => {
         runInAction(() => {
-          this.homeErrorMessage = normalizeError(error, 'KhÃ´ng táº£i Ä‘Æ°á»£c lá»‹ch thi Ä‘áº¥u.');
+          this.homeErrorMessage = normalizeError(error, 'Không tải được dữ liệu lịch thi đấu.');
         });
 
         throw error;
@@ -287,7 +287,7 @@ export class MatchStore implements MatchStoreContract {
       })
       .catch((error: unknown) => {
         runInAction(() => {
-          this.leaderboardErrorMessage = normalizeError(error, 'KhÃ´ng táº£i Ä‘Æ°á»£c báº£ng xáº¿p háº¡ng.');
+          this.leaderboardErrorMessage = normalizeError(error, 'Không tải được dữ liệu bảng xếp hạng.');
         });
 
         throw error;
@@ -342,7 +342,7 @@ export class MatchStore implements MatchStoreContract {
       })
       .catch((error: unknown) => {
         runInAction(() => {
-          this.matchListErrorMessage = normalizeError(error, 'KhÃ´ng táº£i Ä‘Æ°á»£c danh sÃ¡ch tráº­n.');
+          this.matchListErrorMessage = normalizeError(error, 'Không tải được danh sách thi đấu.');
         });
 
         throw error;
@@ -398,7 +398,7 @@ export class MatchStore implements MatchStoreContract {
       })
       .catch((error: unknown) => {
         runInAction(() => {
-          this.dashboardErrorMessage = normalizeError(error, 'KhÃ´ng táº£i Ä‘Æ°á»£c thÃ´ng kÃª dashboard.');
+          this.dashboardErrorMessage = normalizeError(error, 'Không tải được dữ liệu dashboard.');
         });
 
         throw error;
@@ -426,6 +426,49 @@ export class MatchStore implements MatchStoreContract {
   async savePrediction(matchId: number, prediction: PredictionDraft) {
     await savePredictionApi(matchId, prediction);
     await this.refreshLoadedSlices();
+  }
+
+  reset() {
+    runInAction(() => {
+      this.summary = null;
+      this.todayMatches = [];
+      this.shellLoading = false;
+      this.shellRefreshing = false;
+      this.shellLoaded = false;
+      this.shellErrorMessage = null;
+      this.shellPromise = null;
+
+      this.calendar = null;
+      this.homeLoading = false;
+      this.homeRefreshing = false;
+      this.homeLoaded = false;
+      this.homeErrorMessage = null;
+      this.homePromise = null;
+
+      this.standings = [];
+      this.leaderboardLoading = false;
+      this.leaderboardRefreshing = false;
+      this.leaderboardLoaded = false;
+      this.leaderboardErrorMessage = null;
+      this.leaderboardPromise = null;
+
+      this.matches = [];
+      this.matchListLoading = false;
+      this.matchListRefreshing = false;
+      this.matchListLoaded = false;
+      this.matchListErrorMessage = null;
+      this.matchListPromise = null;
+
+      this.ledger = [];
+      this.maxPossiblePoints = 0;
+      this.dashboardLoading = false;
+      this.dashboardRefreshing = false;
+      this.dashboardLoaded = false;
+      this.dashboardErrorMessage = null;
+      this.dashboardPromise = null;
+
+      this.selectedMatch = null;
+    });
   }
 }
 

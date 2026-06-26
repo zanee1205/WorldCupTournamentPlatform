@@ -23,6 +23,11 @@ import { COUNTRY_FLAG_CODE } from './mappings/countryFlagCode.js';
 
 type MatchDocument = Omit<TournamentMatch, 'score'>;
 
+type UserPredictionDocument = MatchPrediction & {
+    userId: string;
+    matchId: number;
+};
+
 type PlayerDocument = {
     playerId: string;
     apiId: number;
@@ -99,6 +104,23 @@ const matchSchema = new mongoose.Schema<MatchDocument>(
 const MatchModel =
     (mongoose.models.TournamentMatch as mongoose.Model<MatchDocument> | undefined) ||
     mongoose.model<MatchDocument>('TournamentMatch', matchSchema);
+
+const userPredictionSchema = new mongoose.Schema<UserPredictionDocument>(
+    {
+        userId: { type: String, required: true, index: true },
+        matchId: { type: Number, required: true, index: true },
+        predictedHomeScore: { type: Number, required: true },
+        predictedAwayScore: { type: Number, required: true },
+        updatedAt: { type: String, required: true },
+    },
+    { versionKey: false },
+);
+
+userPredictionSchema.index({ userId: 1, matchId: 1 }, { unique: true });
+
+const UserPredictionModel =
+    (mongoose.models.UserPrediction as mongoose.Model<UserPredictionDocument> | undefined) ||
+    mongoose.model<UserPredictionDocument>('UserPrediction', userPredictionSchema);
 
 const DEF_POSITIONS = new Set(['CB', 'LB', 'RB', 'LWB', 'RWB', 'DF', 'D', 'DEFENDER', 'DEFENDERS']);
 const MID_POSITIONS = new Set(['CDM', 'CM', 'CAM', 'LM', 'RM', 'MF', 'M', 'MIDFIELDER', 'MIDFIELDERS']);
@@ -217,14 +239,15 @@ function localDateKey(date = new Date()): string {
     ].join('-');
 }
 
-function decorateMatch(match: MatchDocument): TournamentMatch {
+function decorateMatch(match: MatchDocument, userPrediction?: MatchPrediction | null): TournamentMatch {
     const { _id, __v, ...cleanMatch } = match as MatchDocument & { _id?: unknown; __v?: unknown };
+    const prediction = userPrediction ?? null;
     let score = null;
-    if (cleanMatch.prediction && cleanMatch.result) {
+    if (prediction && cleanMatch.result) {
         try {
             // buildScoreBreakdown may throw if stage is unexpected; guard to avoid bubbling to HTTP 500
             // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-            score = buildScoreBreakdown(cleanMatch.stage as any, cleanMatch.prediction as any, cleanMatch.result as any);
+            score = buildScoreBreakdown(cleanMatch.stage as any, prediction as any, cleanMatch.result as any);
         } catch (err) {
             // eslint-disable-next-line no-console
             console.warn(`[repository] failed to build score for match ${cleanMatch.id}:`, err);
@@ -234,6 +257,7 @@ function decorateMatch(match: MatchDocument): TournamentMatch {
 
     return {
         ...cleanMatch,
+        prediction,
         score,
     };
 }
@@ -399,6 +423,7 @@ function buildStandings(matches: TournamentMatch[]): GroupStandingBoard[] {
 
 export class TournamentRepository {
     private matches: MatchDocument[] = [];
+    private userPredictions = new Map<string, MatchPrediction>();
     private readonly useMongo: boolean;
 
     constructor(useMongo: boolean) {
@@ -574,6 +599,54 @@ export class TournamentRepository {
         return MatchModel.find({}, undefined, { sort: { id: 1 } }).lean<MatchDocument[]>();
     }
 
+    private predictionKey(userId: string, matchId: number) {
+        return `${userId}:${matchId}`;
+    }
+
+    private async readUserPredictions(userId: string): Promise<Map<number, MatchPrediction>> {
+        if (!this.useMongo) {
+            const predictions = new Map<number, MatchPrediction>();
+            for (const [key, prediction] of this.userPredictions.entries()) {
+                const [storedUserId, matchId] = key.split(':');
+                if (storedUserId === userId) {
+                    predictions.set(Number(matchId), prediction);
+                }
+            }
+            return predictions;
+        }
+
+        const rows = await UserPredictionModel.find({ userId }).lean<UserPredictionDocument[]>();
+        return new Map(
+            rows.map((prediction) => [
+                prediction.matchId,
+                {
+                    predictedHomeScore: prediction.predictedHomeScore,
+                    predictedAwayScore: prediction.predictedAwayScore,
+                    updatedAt: prediction.updatedAt,
+                },
+            ]),
+        );
+    }
+
+    private async writeUserPrediction(userId: string, matchId: number, prediction: MatchPrediction): Promise<MatchPrediction> {
+        if (!this.useMongo) {
+            this.userPredictions.set(this.predictionKey(userId, matchId), prediction);
+            return prediction;
+        }
+
+        const updated = await UserPredictionModel.findOneAndUpdate(
+            { userId, matchId },
+            { $set: { ...prediction, userId, matchId } },
+            { new: true, upsert: true },
+        ).lean<UserPredictionDocument>();
+
+        return {
+            predictedHomeScore: updated.predictedHomeScore,
+            predictedAwayScore: updated.predictedAwayScore,
+            updatedAt: updated.updatedAt,
+        };
+    }
+
     private async writeMatch(id: number, patch: Partial<MatchDocument>): Promise<TournamentMatch> {
         if (!this.useMongo) {
             const index = this.matches.findIndex((match) => match.id === id);
@@ -596,8 +669,8 @@ export class TournamentRepository {
         return decorateMatch(updated);
     }
 
-    private async ensureEditablePrediction(id: number) {
-        const matches = await this.readMatches();
+    private async ensureEditablePrediction(userId: string, id: number) {
+        const matches = await this.listMatchesForUser(userId);
         const locked = matches.filter((match) => Boolean(match.prediction)).length === matches.length;
         const current = matches.find((match) => match.id === id);
 
@@ -613,6 +686,14 @@ export class TournamentRepository {
     async listMatches(): Promise<TournamentMatch[]> {
         const matches = await this.readMatches();
         return matches.map((match) => decorateMatch(match)).sort((left, right) => left.id - right.id);
+    }
+
+    async listMatchesForUser(userId: string): Promise<TournamentMatch[]> {
+        const matches = await this.readMatches();
+        const predictions = await this.readUserPredictions(userId);
+        return matches
+            .map((match) => decorateMatch(match, predictions.get(match.id) ?? null))
+            .sort((left, right) => left.id - right.id);
     }
 
     async listPlayers(): Promise<PlayerListItem[]> {
@@ -641,8 +722,8 @@ export class TournamentRepository {
         }));
     }
 
-    async getDashboard(): Promise<DashboardResponse> {
-        const matches = await this.listMatches();
+    async getDashboard(userId: string): Promise<DashboardResponse> {
+        const matches = await this.listMatchesForUser(userId);
         const summary = buildSummary(matches);
         return {
             summary,
@@ -654,36 +735,36 @@ export class TournamentRepository {
         };
     }
 
-    async getDashboardShell(): Promise<DashboardShellResponse> {
-        const matches = await this.listMatches();
+    async getDashboardShell(userId: string): Promise<DashboardShellResponse> {
+        const matches = await this.listMatchesForUser(userId);
         return {
             summary: buildSummary(matches),
             todayMatches: matches.filter((match) => match.dateKey === localDateKey()),
         };
     }
 
-    async getDashboardHome(): Promise<DashboardHomeResponse> {
-        const matches = await this.listMatches();
+    async getDashboardHome(userId: string): Promise<DashboardHomeResponse> {
+        const matches = await this.listMatchesForUser(userId);
         return {
             calendar: buildCalendar(matches),
         };
     }
 
-    async getDashboardLeaderboard(): Promise<DashboardLeaderboardResponse> {
-        const matches = await this.listMatches();
+    async getDashboardLeaderboard(userId: string): Promise<DashboardLeaderboardResponse> {
+        const matches = await this.listMatchesForUser(userId);
         return {
             standings: buildStandings(matches),
         };
     }
 
-    async getDashboardMatches(): Promise<DashboardMatchesResponse> {
+    async getDashboardMatches(userId: string): Promise<DashboardMatchesResponse> {
         return {
-            matches: await this.listMatches(),
+            matches: await this.listMatchesForUser(userId),
         };
     }
 
-    async getDashboardStats(): Promise<DashboardStatsResponse> {
-        const matches = await this.listMatches();
+    async getDashboardStats(userId: string): Promise<DashboardStatsResponse> {
+        const matches = await this.listMatchesForUser(userId);
         return {
             ledger: buildLedger(matches),
             maxPossiblePoints: buildMaxPossiblePoints(matches),
@@ -826,16 +907,20 @@ export class TournamentRepository {
         };
     }
 
-    async updatePrediction(id: number, prediction: { predictedHomeScore: number; predictedAwayScore: number }) {
-        await this.ensureEditablePrediction(id);
-        const updated = await this.writeMatch(id, {
-            prediction: {
-                ...prediction,
-                updatedAt: new Date().toISOString(),
-            },
+    async updatePrediction(userId: string, id: number, prediction: { predictedHomeScore: number; predictedAwayScore: number }) {
+        await this.ensureEditablePrediction(userId, id);
+        const matches = await this.readMatches();
+        const match = matches.find((candidate) => candidate.id === id);
+        if (!match) {
+            throw new Error(`Khong tim thay tran #${id}`);
+        }
+
+        const savedPrediction = await this.writeUserPrediction(userId, id, {
+            ...prediction,
+            updatedAt: new Date().toISOString(),
         });
 
-        return updated;
+        return decorateMatch(match, savedPrediction);
     }
 }
 

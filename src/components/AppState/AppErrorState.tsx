@@ -31,7 +31,7 @@ export function AppErrorState({
                                 return;
                             }
 
-                            void refreshApp('initial');
+                            void refreshApp();
                         }}
                     >
                         Thá»­ láº¡i

@@ -1,9 +1,12 @@
+import { useEffect } from 'react';
 import { Alert, Layout } from 'antd';
 import { Content } from 'antd/es/layout/layout';
 import { observer } from 'mobx-react-lite';
 import { Outlet } from 'react-router-dom';
 
 import { AIChatBubble } from '../../components/AiChatBubble/AIChatBubble.tsx';
+import { AppErrorState } from '../../components/AppState/AppErrorState.tsx';
+import { AppLoadingState } from '../../components/AppState/AppLoadingState.tsx';
 import { MatchDrawer } from '../../components/MatchDrawer/MatchDrawer.tsx';
 import { AppFooter } from '../footerSide.tsx';
 import { AppHeader } from '../headerSide.tsx';
@@ -15,6 +18,22 @@ function MainLayout({
 }: {
     refreshing?: boolean;
 }) {
+    useEffect(() => {
+        void appStore.loadShell('initial');
+    }, []);
+
+    if (appStore.shellLoading && !appStore.summary) {
+        return <AppLoadingState message="Đang tải dữ liệu ứng dụng..." />;
+    }
+
+    if (appStore.shellErrorMessage && !appStore.summary) {
+        return <AppErrorState description={appStore.shellErrorMessage} onRetry={() => {appStore.loadShell('initial')}} />;
+    }
+
+    if (!appStore.summary) {
+        return null;
+    }
+
     return (
         <Layout className={styles.appLayout}>
             <AppHeader />

@@ -1,5 +1,6 @@
 import axios from 'axios';
 
+import type { AuthLoginInput, AuthRegisterInput, AuthSessionResponse } from '../types/auth.ts';
 import type { DashboardResponse } from '../../server/src/types/dashboardResponse.ts';
 import type { DashboardHomeResponse } from '../../server/src/types/dashboardHomeResponse.ts';
 import type { DashboardLeaderboardResponse } from '../../server/src/types/dashboardLeaderboardResponse.ts';
@@ -35,13 +36,53 @@ export function apiPath(path: string) {
 
 const http = axios.create({
   baseURL: API_BASE ? `${API_BASE}/api` : '/api',
+  withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
+type UnauthorizedHandler = ((error: unknown) => void) | null;
+
+let unauthorizedHandler: UnauthorizedHandler = null;
+
+export function setUnauthorizedHandler(handler: UnauthorizedHandler) {
+  unauthorizedHandler = handler;
+}
+
+http.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (axios.isAxiosError(error) && error.response?.status === 401) {
+      unauthorizedHandler?.(error);
+    }
+
+    return Promise.reject(error);
+  },
+);
+
 export async function getDashboard() {
   const response = await http.get<DashboardResponse>('/dashboard');
+  return response.data;
+}
+
+export async function getAuthSession() {
+  const response = await http.get<AuthSessionResponse>('/auth/me');
+  return response.data;
+}
+
+export async function login(payload: AuthLoginInput) {
+  const response = await http.post<AuthSessionResponse>('/auth/login', payload);
+  return response.data;
+}
+
+export async function register(payload: AuthRegisterInput) {
+  const response = await http.post<AuthSessionResponse>('/auth/register', payload);
+  return response.data;
+}
+
+export async function logout() {
+  const response = await http.post('/auth/logout');
   return response.data;
 }
 

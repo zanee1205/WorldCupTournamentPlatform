@@ -51,12 +51,12 @@ export const DashboardPage = observer(function DashboardPage() {
     void appStore.loadDashboardStats('initial');
   }, []);
 
-  if (appStore.dashboardLoading && ledger.length === 0) {
-    return <AppLoadingState message="Đang tải thống kê..." />;
-  }
-
   if (appStore.dashboardErrorMessage && ledger.length === 0) {
     return <AppErrorState description={appStore.dashboardErrorMessage} onRetry={() => {appStore.loadDashboardStats('initial')}} />;
+  }
+
+  if (!appStore.dashboardLoaded && ledger.length === 0) {
+    return <AppLoadingState message="Đang tải thống kê..." />;
   }
 
   if (!summary) {

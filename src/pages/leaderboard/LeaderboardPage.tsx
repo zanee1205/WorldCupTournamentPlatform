@@ -75,12 +75,12 @@ export const LeaderboardPage = observer(function LeaderboardPage() {
     void appStore.loadLeaderboard('initial');
   }, []);
 
-  if (appStore.leaderboardLoading && standings.length === 0) {
-    return <AppLoadingState message="Đang tải bảng xếp hạng..." />;
-  }
-
   if (appStore.leaderboardErrorMessage && standings.length === 0) {
     return <AppErrorState description={appStore.leaderboardErrorMessage} onRetry={() => {appStore.loadLeaderboard('initial')}} />;
+  }
+
+  if (!appStore.leaderboardLoaded && standings.length === 0) {
+    return <AppLoadingState message="Đang tải bảng xếp hạng..." />;
   }
 
   if (standings.length === 0) {
@@ -89,7 +89,7 @@ export const LeaderboardPage = observer(function LeaderboardPage() {
 
   return (
     <div>
-      <Typography.Title level={2} style={{ color: 'white' }}>
+      <Typography.Title level={1} style={{ color: 'white', fontWeight: 'bold', marginTop: 16 }}>
         Leaderboard
       </Typography.Title>
       <Typography.Paragraph className={styles.description}>

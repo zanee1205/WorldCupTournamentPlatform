@@ -1,158 +1,6 @@
 .appLayout {
     min-height: 100vh;
     background: transparent;
-
-    .appHeader {
-        height: 78px;
-        line-height: 78px;
-        display: flex;
-        align-items: center;
-        padding: 0 40px;
-        background: #0f172a;
-
-        :global {
-
-            // Reset menu background
-            .ant-menu {
-                background: transparent !important;
-                border-bottom: none !important;
-                line-height: 64px;
-            }
-
-            // Ẩn TẤT CẢ underline
-            .ant-menu-item::after,
-            .ant-menu-item-selected::after,
-            .ant-menu-item-active::after,
-            .ant-menu-overflow-item::after {
-                display: none !important;
-                border-bottom: none !important;
-            }
-
-            // Menu item wrapper
-            .ant-menu-item {
-                padding: 0 6px !important;
-                margin: 0 4px !important;
-                background: transparent !important;
-                top: 0 !important;
-
-                a {
-                    margin-top: 2px;
-                    display: inline-block;
-                    vertical-align: middle;
-
-                }
-
-                &:hover {
-                    background: transparent !important;
-                }
-            }
-
-            // Link bên trong
-            .ant-menu-item a {
-                display: inline-block;
-                color: #fff !important;
-                -webkit-text-fill-color: #fff !important;
-                background: linear-gradient(135deg, #6366f1, #8b5cf6);
-                border-radius: 12px !important;
-                padding: 0 10px;
-                margin-top: 5px;
-                font-weight: 500;
-                font-size: 12px;
-                position: relative;
-                overflow: hidden;
-                transition: all 0.3s ease;
-                text-decoration: none !important;
-
-                &::after {
-                    content: '';
-                    position: absolute;
-                    top: 0;
-                    left: -100%;
-                    width: 60%;
-                    height: 100%;
-                    background: linear-gradient(120deg,
-                            transparent 0%,
-                            rgba(255, 255, 255, 0.35) 50%,
-                            transparent 100%);
-                    transition: left 0.5s ease;
-                }
-
-                &:hover {
-                    background: linear-gradient(135deg, #818cf8, #a78bfa) !important;
-                    box-shadow: 0 4px 15px rgba(99, 102, 241, 0.5);
-                    transform: scale(1.1);
-
-                    &::after {
-                        left: 150%;
-                    }
-                }
-            }
-
-            // Selected
-            .ant-menu-item-selected a {
-                background: linear-gradient(135deg, #4f46e5, #7c3aed) !important;
-                box-shadow: 0 4px 15px rgba(99, 102, 241, 0.6);
-            }
-
-            .ant-menu-item-selected {
-                background: transparent !important;
-            }
-        }
-
-        @keyframes flamePulse {
-
-            0%,
-            100% {
-                text-shadow:
-                    0 0 4px rgba(255, 255, 255, 0.6),
-                    0 0 12px rgba(165, 180, 252, 0.4),
-                    0 0 24px rgba(99, 102, 241, 0.3);
-            }
-
-            50% {
-                text-shadow:
-                    0 0 8px rgba(255, 255, 255, 1),
-                    0 0 20px rgba(196, 181, 253, 0.9),
-                    0 0 40px rgba(139, 92, 246, 0.7),
-                    0 0 60px rgba(99, 102, 241, 0.5),
-                    0 0 80px rgba(79, 70, 229, 0.3);
-            }
-        }
-    }
-
-    .brandText {
-        color: #ffffff;
-        font-weight: 800 !important;
-        font-size: 30px !important;
-        white-space: nowrap;
-        animation: flamePulse 3s ease-in-out infinite;
-    }
-
-    .brand {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        color: #fff;
-        white-space: nowrap;
-    }
-
-    .brandMark {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 60px !important;
-        height: 60px !important;
-        border-radius: 12px;
-        background: #0f172a;
-        font-weight: 700;
-        cursor: pointer;
-    }
-
-    .brandText {
-        font-size: 26px;
-        font-weight: 600;
-        animation: flamePulse 2.5s ease-in-out infinite;
-    }
 }
 
 .appContent {
@@ -168,11 +16,9 @@
     height: 100%;
     margin: 0;
     background: linear-gradient(135deg, #0f0f14 0%, #12101e 50%, #1a1428 100%);
-    /* pure black background */
     color: rgba(255, 255, 255, 0.9);
 }
 
-/* AntD table dark theme adjustments (global) */
 :global(.ant-table),
 :global(.ant-table-wrapper),
 :global(.ant-table-container) {
@@ -207,13 +53,6 @@
     color: rgba(255, 255, 255, 0.75);
 }
 
-.loadingScreen {
-    min-height: 100vh;
-    display: grid;
-    place-items: center;
-}
-
-/* Mobile table behavior */
 @media (max-width: 768px) {
     :global(.ant-table-container) {
         overflow-x: auto !important;
@@ -232,48 +71,5 @@
 
     .appContent {
         padding: 12px !important;
-    }
-}
-
-/* Mobile adjustments */
-@media (max-width: 768px) {
-    .appLayout {
-        .appHeader {
-            height: 64px;
-            line-height: 64px;
-            padding: 0 12px;
-
-            .brandText {
-                font-size: 18px !important;
-            }
-
-            .brandMark {
-                width: 44px !important;
-                height: 44px !important;
-            }
-
-            :global(.ant-menu) {
-                display: none !important;
-            }
-
-            .mobileMenuBtn {
-                display: inline-flex;
-                margin-left: auto;
-                align-items: center;
-                justify-content: center;
-                height: 44px;
-            }
-
-            .headerActions {
-                display: flex;
-                align-items: center;
-                gap: 12px;
-                margin-left: 12px;
-            }
-        }
-
-        .appContent {
-            padding: 12px;
-        }
     }
 }

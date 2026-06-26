@@ -3,6 +3,7 @@ import { Content } from 'antd/es/layout/layout';
 import { observer } from 'mobx-react-lite';
 import { Outlet } from 'react-router-dom';
 
+import { AIChatBubble } from '../../components/AiChatBubble/AIChatBubble.tsx';
 import { MatchDrawer } from '../../components/MatchDrawer/MatchDrawer.tsx';
 import { AppFooter } from '../footerSide.tsx';
 import { AppHeader } from '../headerSide.tsx';
@@ -32,6 +33,7 @@ function MainLayout({
                 onClose={appStore.closeMatch}
                 onSavePrediction={appStore.savePrediction}
             />
+            <AIChatBubble />
         </Layout>
     );
 }

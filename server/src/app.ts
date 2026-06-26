@@ -51,6 +51,26 @@ export function createApp(repository: TournamentRepository) {
     response.json(dashboard);
   });
 
+  app.get('/api/dashboard/shell', async (_request, response) => {
+    response.json(await repository.getDashboardShell());
+  });
+
+  app.get('/api/dashboard/home', async (_request, response) => {
+    response.json(await repository.getDashboardHome());
+  });
+
+  app.get('/api/dashboard/leaderboard', async (_request, response) => {
+    response.json(await repository.getDashboardLeaderboard());
+  });
+
+  app.get('/api/dashboard/matches', async (_request, response) => {
+    response.json(await repository.getDashboardMatches());
+  });
+
+  app.get('/api/dashboard/stats', async (_request, response) => {
+    response.json(await repository.getDashboardStats());
+  });
+
   app.get('/api/matches', async (_request, response) => {
     response.json(await repository.listMatches());
   });

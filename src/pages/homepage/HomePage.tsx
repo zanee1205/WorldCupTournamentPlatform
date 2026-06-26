@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 
 import { Button, Card, Calendar, Drawer, Empty, List, Progress, Space, Tag, Tooltip, Typography } from 'antd';
@@ -7,6 +7,8 @@ import dayjs, { type Dayjs } from 'dayjs';
 
 import { formatDateTime } from '../../../shared/date.ts';
 import type { TournamentMatch } from '../../../shared/types/tournamentMatch.ts';
+import { AppErrorState } from '../../components/AppState/AppErrorState.tsx';
+import { AppLoadingState } from '../../components/AppState/AppLoadingState.tsx';
 import { CountryFlag } from '../../components/CountryFlagIcon/CountryFlag.tsx';
 import { TeamLineupModal } from '../../components/MatchLineup/TeamLineupModal.tsx';
 import { useBreakpoint } from '../../hooks/useViewport.ts';
@@ -21,17 +23,31 @@ function resolveMatchTeams(match: TournamentMatch) {
 }
 
 export const HomePage = observer(function HomePage() {
-  const dashboard = appStore.dashboard;
+  const summary = appStore.summary;
+  const calendar = appStore.calendar;
+  const todayMatches = appStore.todayMatches;
   const [monthValue, setMonthValue] = useState(dayjs());
   const isMobile = useBreakpoint(480);
   const [drawerMatches, setDrawerMatches] = useState<TournamentMatch[] | null>(null);
   const [selectedLineupMatch, setSelectedLineupMatch] = useState<TournamentMatch | null>(null);
 
-  if (!dashboard) {
+  useEffect(() => {
+    void appStore.loadHome('initial');
+  }, []);
+
+  if (appStore.homeLoading && !calendar) {
+    return <AppLoadingState message="Đang tải lịch thi đấu..." />;
+  }
+
+  if (!calendar) {
+    return <AppErrorState description={appStore.homeErrorMessage ?? 'Vui lòng thử lại.'} onRetry={() => {appStore.loadHome('initial')}} />;
+  }
+
+  if (!summary) {
     return null;
   }
 
-  const lockedProgress = Math.round((dashboard.summary.predictedMatches / dashboard.summary.totalMatches) * 100);
+  const lockedProgress = Math.round((summary.predictedMatches / summary.totalMatches) * 100);
 
   const renderMatchTitle = (match: TournamentMatch) => {
     const { home, away } = resolveMatchTeams(match);
@@ -68,7 +84,7 @@ export const HomePage = observer(function HomePage() {
   };
 
   const renderDayItems = (dateKey: string) => {
-    const items = dashboard.calendar[dateKey] ?? [];
+    const items = calendar[dateKey] ?? [];
     const maxVisible = isMobile ? 1 : 2;
     const visible = items.slice(0, maxVisible);
 
@@ -124,7 +140,7 @@ export const HomePage = observer(function HomePage() {
     }
 
     const key = current.format('YYYY-MM-DD');
-    const matches = dashboard.calendar[key] ?? [];
+    const matches = calendar[key] ?? [];
 
     return (
       <div className={styles.calendarCell}>
@@ -156,19 +172,19 @@ export const HomePage = observer(function HomePage() {
         </Typography.Paragraph>
         <Space wrap>
           <Tag
-            color={dashboard.summary.locked ? 'rgba(16,185,129,0.15)' : 'rgba(245,158,11,0.15)'}
+            color={summary.locked ? 'rgba(16,185,129,0.15)' : 'rgba(245,158,11,0.15)'}
             style={{
-              color: dashboard.summary.locked ? '#6ee7b7' : '#fcd34d',
-              border: `0.5px solid ${dashboard.summary.locked ? 'rgba(16,185,129,0.3)' : 'rgba(245,158,11,0.3)'}`,
+              color: summary.locked ? '#6ee7b7' : '#fcd34d',
+              border: `0.5px solid ${summary.locked ? 'rgba(16,185,129,0.3)' : 'rgba(245,158,11,0.3)'}`,
             }}
           >
-            {dashboard.summary.locked ? 'Đã khóa dự đoán' : 'Chưa khóa dự đoán'}
+            {summary.locked ? 'Đã khóa dự đoán' : 'Chưa khóa dự đoán'}
           </Tag>
           <Tag color="#0f1923" style={{ color: '#0ade57', border: '0.5px solid rgba(125,211,252,0.3)' }}>
-            Tổng {dashboard.summary.totalMatches} trận
+            Tổng {summary.totalMatches} trận
           </Tag>
           <Tag color="#0f1923" style={{ color: '#7dd3fc', border: '0.5px solid rgba(125,211,252,0.3)' }}>
-            Đã dự đoán {dashboard.summary.predictedMatches} trận
+            Đã dự đoán {summary.predictedMatches} trận
           </Tag>
         </Space>
       </div>
@@ -178,32 +194,32 @@ export const HomePage = observer(function HomePage() {
           <Card title={<span style={{ color: 'rgba(145, 136, 203, 0.89)' }}>Tiến độ dự đoán</span>} className={styles.progressCard}>
             <Progress
               percent={lockedProgress}
-              status={dashboard.summary.locked ? 'success' : 'active'}
-              strokeColor={dashboard.summary.locked ? '#6ee7b7' : { from: '#6366f1', to: '#a5b4fc' }}
+              status={summary.locked ? 'success' : 'active'}
+              strokeColor={summary.locked ? '#6ee7b7' : { from: '#6366f1', to: '#a5b4fc' }}
               trailColor="rgba(255,255,255,0.08)"
             />
             <div className={styles.progressMeta}>
-              <span className={styles.progressCount}>{dashboard.summary.predictedMatches}</span>
-              <span className={styles.progressTotal}>/{dashboard.summary.totalMatches}</span>{' '}
+              <span className={styles.progressCount}>{summary.predictedMatches}</span>
+              <span className={styles.progressTotal}>/{summary.totalMatches}</span>{' '}
               trận đã có dự đoán.
             </div>
           </Card>
         </div>
         <div className="col-12 col-lg-4">
           <Card title={<span style={{ color: 'rgba(49, 227, 243, 0.89)' }}>Điểm hiện tại</span>} className={styles.scoreCard}>
-            <div className={styles.scoreValue}>{dashboard.summary.totalPoints}</div>
+            <div className={styles.scoreValue}>{summary.totalPoints}</div>
             <div className={styles.textMuted}>Điểm được tính tự động từ dự đoán và kết quả thực tế.</div>
           </Card>
         </div>
 
         <div className="col-12 col-lg-4">
           <Card title={<span style={{ color: 'rgba(183, 195, 52, 0.89)' }}>Trận trong ngày</span>} className={styles.todayMatchesCard}>
-            {dashboard.todayMatches.length === 0 ? (
+            {todayMatches.length === 0 ? (
               <Empty description="Chưa có trận nào trong ngày" />
             ) : (
               <List
                 size="small"
-                dataSource={dashboard.todayMatches}
+                dataSource={todayMatches}
                 renderItem={(match) => (
                   <List.Item
                     actions={[

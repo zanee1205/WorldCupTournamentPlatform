@@ -1,15 +1,15 @@
-import React from 'react';
 import { observer } from 'mobx-react-lite';
 import { Badge, Popover, List, Button, Empty } from 'antd';
 import { BellOutlined } from '@ant-design/icons';
+
 import styles from './NotificationBell.module.scss';
 import { CountryFlag } from '../CountryFlagIcon/CountryFlag';
 import { useToggle } from '../../hooks/useToggle';
-import { appStore } from '../../store/matchStore';
+import { appStore } from '../../store/matchStore.ts';
 
 export default observer(function NotificationBell() {
     const { value: open, setValue: setOpen } = useToggle(false);
-    const matches = appStore.dashboard?.todayMatches ?? [];
+    const matches = appStore.todayMatches;
     const count = matches.length;
 
     const content = count === 0 ? (

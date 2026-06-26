@@ -1,19 +1,24 @@
-import { Button, Card, Table, Tag, Input, Space, Typography, Statistic } from 'antd';
-import type { TableColumnsType } from 'antd';
 import { useEffect, useMemo, useState } from 'react';
 import { observer } from 'mobx-react-lite';
+import { Button, Card, Table, Tag, Input, Space, Typography, Statistic } from 'antd';
+import type { TableColumnsType } from 'antd';
 
 import { formatDateTime } from '../../../shared/date.js';
 import type { PaginationState } from '../../types/paginationstate.ts';
 import type { TournamentMatch } from '../../../shared/types/tournamentMatch.ts';
+import { AppErrorState } from '../../components/AppState/AppErrorState.tsx';
+import { AppLoadingState } from '../../components/AppState/AppLoadingState.tsx';
 import { appStore } from '../../store/matchStore.ts';
 
 import styles from './MatchListPage.module.scss';
 import { TeamLineupTrigger } from '../../components/MatchLineup/TeamLineupTrigger.tsx';
 
 export const MatchListPage = observer(function MatchListPage() {
-  const dashboard = appStore.dashboard;
-  const matches = dashboard?.matches ?? [];
+  const matches = appStore.matches;
+
+  useEffect(() => {
+    void appStore.loadMatchList('initial');
+  }, []);
 
   const resultMatchesCount = useMemo(
     () => matches.filter((m) => Boolean(m.result)).length,
@@ -155,8 +160,12 @@ export const MatchListPage = observer(function MatchListPage() {
     setPagination((p) => ({ ...p, total: filteredMatches.length, current: 1 }));
   }, [filteredMatches.length]);
 
-  if (!dashboard) {
-    return null;
+  if (appStore.matchListLoading && matches.length === 0) {
+    return <AppLoadingState message="Đang tải danh sách trận..." />;
+  }
+
+  if (appStore.matchListErrorMessage && matches.length === 0) {
+    return <AppErrorState description={appStore.matchListErrorMessage} onRetry={() => {appStore.loadMatchList('initial')}} />;
   }
 
   return (
@@ -177,11 +186,12 @@ export const MatchListPage = observer(function MatchListPage() {
       >
         Danh sách các trận cầu World Cup 2026
       </Typography.Title>
+
       <div className="row">
         <div className="col-12 col-md-6">
           <Card className={styles.resultMatchCard}>
             <Statistic
-              title={<span style={{ color: 'rgba(49, 227, 243, 0.89)', fontSize: 20 }}> <b>Kết quả trận đã cập nhật (ghi nhận theo lịch đá quốc tế)</b> </span>}
+              title={<span style={{ color: 'rgba(49, 227, 243, 0.89)', fontSize: 20 }}><b>Kết quả trận đã cập nhật (ghi nhận theo lịch đá quốc tế)</b></span>}
               value={`${resultMatchesCount}/104 trận đấu`}
             />
           </Card>
@@ -205,6 +215,7 @@ export const MatchListPage = observer(function MatchListPage() {
           </Card>
         </div>
       </div>
+
       <Card className={styles.tableCard}>
         <div className={`mb-3 ${styles.searchBar}`}>
           <Space style={{ width: '100%', justifyContent: 'space-between' }}>

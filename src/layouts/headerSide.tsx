@@ -14,7 +14,7 @@ const { Header } = Layout;
 
 export const AppHeader = observer(function AppHeader() {
   const location = useLocation();
-  const dashboard = appStore.dashboard;
+  const summary = appStore.summary;
   const selectedKey = useMemo(() => {
     if (location.pathname.startsWith('/dashboard')) return 'dashboard';
     if (location.pathname.startsWith('/leaderboard')) return 'leaderboard';
@@ -25,7 +25,7 @@ export const AppHeader = observer(function AppHeader() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const isMobile = useBreakpoint(768);
 
-  if (!dashboard) {
+  if (!summary) {
     return null;
   }
 

@@ -1,12 +1,17 @@
 import mongoose from 'mongoose';
 
-import { buildScoreBreakdown } from '../../shared/scoring.js';
+import { buildScoreBreakdown, getStageScore } from '../../shared/scoring.js';
 import type { TournamentMatch } from '../../shared/types/tournamentMatch.js';
 import type { MatchPrediction } from '../../server/src/types/predictionInput.js';
 import type { MatchResult } from '../../server/src/types/resultInput.js';
 import type { ScoreLedgerEntry } from '../../src/types/scoreLedgerEntry.js';
 import type { DashboardSummary } from '../../src/types/dashboardSummary.js';
 import type { DashboardResponse } from './types/dashboardResponse.js';
+import type { DashboardHomeResponse } from './types/dashboardHomeResponse.js';
+import type { DashboardLeaderboardResponse } from './types/dashboardLeaderboardResponse.js';
+import type { DashboardMatchesResponse } from './types/dashboardMatchesResponse.js';
+import type { DashboardShellResponse } from './types/dashboardShellResponse.js';
+import type { DashboardStatsResponse } from './types/dashboardStatsResponse.js';
 import type { PlayerListItem } from '../../src/types/playerListItem.js';
 import type { GroupStandingBoard, GroupStandingTeam } from '../../shared/types/groupStanding.js';
 import type { TeamLineup, LineupPlayer, ReplacementPlayer } from '../../shared/types/teamLineup.js';
@@ -282,6 +287,21 @@ function buildLedger(matches: TournamentMatch[]): ScoreLedgerEntry[] {
             totalPoints: match.score?.totalPoints ?? 0,
         }))
         .sort((left, right) => left.dateKey.localeCompare(right.dateKey) || left.matchId - right.matchId);
+}
+
+function buildMaxPossiblePoints(matches: TournamentMatch[]): number {
+    return matches.reduce((total, match) => {
+        if (!match.result) {
+            return total;
+        }
+
+        try {
+            const score = getStageScore(match.stage as any);
+            return total + score.stagePoints + score.exactPoints;
+        } catch {
+            return total;
+        }
+    }, 0);
 }
 
 function buildCalendar(matches: TournamentMatch[]): Record<string, TournamentMatch[]> {
@@ -631,6 +651,42 @@ export class TournamentRepository {
             ledger: buildLedger(matches),
             calendar: buildCalendar(matches),
             standings: buildStandings(matches),
+        };
+    }
+
+    async getDashboardShell(): Promise<DashboardShellResponse> {
+        const matches = await this.listMatches();
+        return {
+            summary: buildSummary(matches),
+            todayMatches: matches.filter((match) => match.dateKey === localDateKey()),
+        };
+    }
+
+    async getDashboardHome(): Promise<DashboardHomeResponse> {
+        const matches = await this.listMatches();
+        return {
+            calendar: buildCalendar(matches),
+        };
+    }
+
+    async getDashboardLeaderboard(): Promise<DashboardLeaderboardResponse> {
+        const matches = await this.listMatches();
+        return {
+            standings: buildStandings(matches),
+        };
+    }
+
+    async getDashboardMatches(): Promise<DashboardMatchesResponse> {
+        return {
+            matches: await this.listMatches(),
+        };
+    }
+
+    async getDashboardStats(): Promise<DashboardStatsResponse> {
+        const matches = await this.listMatches();
+        return {
+            ledger: buildLedger(matches),
+            maxPossiblePoints: buildMaxPossiblePoints(matches),
         };
     }
 

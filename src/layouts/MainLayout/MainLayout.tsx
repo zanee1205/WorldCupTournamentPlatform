@@ -8,14 +8,11 @@ import { MatchDrawer } from '../../components/MatchDrawer/MatchDrawer.tsx';
 import { AppFooter } from '../footerSide.tsx';
 import { AppHeader } from '../headerSide.tsx';
 import styles from './MainLayout.module.scss';
-import type { TournamentMatch } from '../../../shared/types/tournamentMatch.ts';
 import { appStore } from '../../store/appStore.ts';
 
 function MainLayout({
     refreshing,
 }: {
-    dashboard?: NonNullable<typeof appStore.dashboard>;
-    onOpenMatch?: (match: TournamentMatch) => void;
     refreshing?: boolean;
 }) {
     return (
@@ -29,7 +26,7 @@ function MainLayout({
             <MatchDrawer
                 open={Boolean(appStore.selectedMatch)}
                 match={appStore.selectedMatch}
-                readOnly={Boolean(appStore.dashboard?.summary.locked)}
+                readOnly={Boolean(appStore.summary?.locked)}
                 onClose={appStore.closeMatch}
                 onSavePrediction={appStore.savePrediction}
             />

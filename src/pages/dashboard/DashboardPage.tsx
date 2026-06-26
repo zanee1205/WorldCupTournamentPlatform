@@ -1,40 +1,77 @@
+import { useEffect } from 'react';
 import { Card, Progress, Statistic, Table, Tag, Typography } from 'antd';
+import type { TableColumnsType } from 'antd';
 import { observer } from 'mobx-react-lite';
 
 import { CountryFlag } from '../../components/CountryFlagIcon/CountryFlag.tsx';
+import { AppErrorState } from '../../components/AppState/AppErrorState.tsx';
+import { AppLoadingState } from '../../components/AppState/AppLoadingState.tsx';
 import { appStore } from '../../store/matchStore.ts';
-import { getStageScore } from '../../../shared/scoring.ts';
+
+import type { ScoreLedgerEntry } from '../../../src/types/scoreLedgerEntry.ts';
 
 import styles from './DashboardPage.module.scss';
 
-export const DashboardPage = observer(function DashboardPage() {
-  const dashboard = appStore.dashboard;
+const columns: TableColumnsType<ScoreLedgerEntry> = [
+  { title: 'Trận', dataIndex: 'matchId', width: 90 },
+  { title: 'Ngày', dataIndex: 'dateKey', width: 120 },
+  {
+    title: 'Mô tả',
+    dataIndex: 'title',
+    render: (title: string) => {
+      const parts = (title ?? '').split(/vs|VS|-|–|—/).map((part) => part.trim()).filter(Boolean);
+      const home = parts[0] ?? title;
+      const away = parts[1] ?? null;
+      return (
+        <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <CountryFlag name={home} showName={false} />
+          <span>{title}</span>
+          {away ? <CountryFlag name={away} showName={false} /> : null}
+        </span>
+      );
+    },
+  },
+  { title: 'Dự đoán', dataIndex: 'predictionText', width: 120 },
+  { title: 'Kết quả', dataIndex: 'resultText', width: 120 },
+  { title: 'Xu hướng', dataIndex: 'trendText', width: 160 },
+  {
+    title: 'Điểm',
+    dataIndex: 'totalPoints',
+    width: 100,
+    render: (value) => <span className={styles.totalPointsCell}>{value}</span>,
+  },
+];
 
-  if (!dashboard) {
+export const DashboardPage = observer(function DashboardPage() {
+  const summary = appStore.summary;
+  const ledger = appStore.ledger;
+  const maxPossiblePoints = appStore.maxPossiblePoints;
+
+  useEffect(() => {
+    void appStore.loadDashboardStats('initial');
+  }, []);
+
+  if (appStore.dashboardLoading && ledger.length === 0) {
+    return <AppLoadingState message="Đang tải thống kê..." />;
+  }
+
+  if (appStore.dashboardErrorMessage && ledger.length === 0) {
+    return <AppErrorState description={appStore.dashboardErrorMessage} onRetry={() => {appStore.loadDashboardStats('initial')}} />;
+  }
+
+  if (!summary) {
     return null;
   }
 
-  const lockedMessage = dashboard.summary.locked
+  const lockedMessage = summary.locked
     ? 'Read-only mode đã bật: không thể chỉnh sửa dự đoán nữa.'
     : 'Người dùng vẫn có thể cập nhật dự đoán cho đến khi đủ 104 trận.';
 
-  const resultMatches = dashboard.matches.filter((m) => Boolean(m.result));
-  const maxPossiblePoints = resultMatches.reduce((acc, m) => {
-    try {
-      const s = getStageScore(m.stage as any);
-      return acc + (s.stagePoints + s.exactPoints);
-    } catch {
-      return acc;
-    }
-  }, 0);
-
-  const userPoints = dashboard.summary.totalPoints ?? 0;
+  const userPoints = summary.totalPoints ?? 0;
   const progressPercent = maxPossiblePoints > 0 ? Math.round((userPoints / maxPossiblePoints) * 100) : 0;
-
-  const ledger = dashboard.ledger ?? [];
-  const exactCount = ledger.filter((e) => e.exactPoints > 0).length;
-  const trendCount = ledger.filter((e) => e.exactPoints === 0 && e.stagePoints > 0).length;
-  const wrongCount = ledger.filter((e) => e.stagePoints === 0 && e.exactPoints === 0).length;
+  const exactCount = ledger.filter((entry) => entry.exactPoints > 0).length;
+  const trendCount = ledger.filter((entry) => entry.exactPoints === 0 && entry.stagePoints > 0).length;
+  const wrongCount = ledger.filter((entry) => entry.stagePoints === 0 && entry.exactPoints === 0).length;
   const totalCount = ledger.length || 1;
   const exactPct = Math.round((exactCount / totalCount) * 100);
   const trendPct = Math.round((trendCount / totalCount) * 100);
@@ -58,28 +95,29 @@ export const DashboardPage = observer(function DashboardPage() {
       <Typography.Paragraph className="mb-3" style={{ color: '#e7e7e7' }}>
         Quản lý dự đoán, nhập kết quả thực tế, và theo dõi cách điểm được cộng cho từng trận.
       </Typography.Paragraph>
+
       <div className="row g-3 mb-4">
         <div className="col-12 col-md-4">
           <Card className={styles.userPointCard}>
             <Statistic
-              title={<span style={{ color: 'rgba(183, 195, 52, 0.89)', fontSize: 20 }}> <b>Tổng điểm User</b> </span>}
-              value={dashboard.summary.totalPoints}
+              title={<span style={{ color: 'rgba(183, 195, 52, 0.89)', fontSize: 20 }}><b>Tổng điểm User</b></span>}
+              value={summary.totalPoints}
             />
           </Card>
         </div>
         <div className="col-12 col-md-4">
           <Card className={styles.predictedMatchCard}>
             <Statistic
-              title={<span style={{ color: 'rgba(168, 160, 221, 0.89)', fontSize: 20 }}><b> Đã dự đoán </b></span>}
-              value={`${dashboard.summary.predictedMatches}/${dashboard.summary.totalMatches} trận`}
+              title={<span style={{ color: 'rgba(168, 160, 221, 0.89)', fontSize: 20 }}><b>Đã dự đoán</b></span>}
+              value={`${summary.predictedMatches}/${summary.totalMatches} trận`}
             />
           </Card>
         </div>
         <div className="col-12 col-md-4">
           <Card className={styles.resultMatchCard}>
             <Statistic
-              title={<span style={{ color: 'rgba(49, 227, 243, 0.89)', fontSize: 20 }}> <b> Kết quả trận đã cập nhật </b> </span>}
-              value={`${dashboard.summary.resultMatches} trận`}
+              title={<span style={{ color: 'rgba(49, 227, 243, 0.89)', fontSize: 20 }}><b>Kết quả trận đã cập nhật</b></span>}
+              value={`${summary.resultMatches} trận`}
             />
           </Card>
         </div>
@@ -87,19 +125,19 @@ export const DashboardPage = observer(function DashboardPage() {
 
       <Card className={styles.summaryPointCard}>
         <Tag
-          color={dashboard.summary.locked ? 'rgba(16,185,129,0.15)' : 'rgba(245,158,11,0.15)'}
+          color={summary.locked ? 'rgba(16,185,129,0.15)' : 'rgba(245,158,11,0.15)'}
           style={{
-            color: dashboard.summary.locked ? '#6ee7b7' : '#fcd34d',
-            border: `0.5px solid ${dashboard.summary.locked ? 'rgba(16,185,129,0.3)' : 'rgba(245,158,11,0.3)'}`,
+            color: summary.locked ? '#6ee7b7' : '#fcd34d',
+            border: `0.5px solid ${summary.locked ? 'rgba(16,185,129,0.3)' : 'rgba(245,158,11,0.3)'}`,
             padding: 5,
           }}
         >
           {lockedMessage}
         </Tag>
         <div className={styles.pointDisplay}>
-          Điểm xu hướng: {dashboard.summary.stagePoints}
+          Điểm xu hướng: {summary.stagePoints}
           <br />
-          Điểm tỉ số chính xác: {dashboard.summary.exactPoints}
+          Điểm tỉ số chính xác: {summary.exactPoints}
         </div>
       </Card>
 
@@ -108,7 +146,7 @@ export const DashboardPage = observer(function DashboardPage() {
           <div className={styles.statsPanel}>
             <div className={styles.statsPanelTitle}>
               So sánh điểm User với tổng điểm tối đa
-              <span className={styles.textMuted}> · {resultMatches.length} trận đã có kết quả</span>
+              <span className={styles.textMuted}> · {summary.resultMatches} trận đã có kết quả</span>
             </div>
 
             <Progress
@@ -155,40 +193,12 @@ export const DashboardPage = observer(function DashboardPage() {
       </Card>
 
       <Card
-        title={<span style={{ color: 'rgba(243, 49, 49, 0.89)', fontSize: 25 }}> <b> Lịch sử tính điểm </b> </span>}
+        title={<span style={{ color: 'rgba(243, 49, 49, 0.89)', fontSize: 25 }}><b>Lịch sử tính điểm</b></span>}
         className={styles.scoreHistoryCard}
       >
         <Table
           rowKey="matchId"
-          columns={[
-            { title: 'Trận', dataIndex: 'matchId', width: 90 },
-            { title: 'Ngày', dataIndex: 'dateKey', width: 120 },
-            {
-              title: 'Mô tả',
-              dataIndex: 'title',
-              render: (title: string) => {
-                const parts = (title ?? '').split(/vs|VS|â€“|-|â€”/).map((p) => p.trim()).filter(Boolean);
-                const home = parts[0] ?? title;
-                const away = parts[1] ?? null;
-                return (
-                  <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <CountryFlag name={home} showName={false} />
-                    <span>{title}</span>
-                    {away ? <CountryFlag name={away} showName={false} /> : null}
-                  </span>
-                );
-              },
-            },
-            { title: 'Dự đoán', dataIndex: 'predictionText', width: 120 },
-            { title: 'Kết quả', dataIndex: 'resultText', width: 120 },
-            { title: 'Xu hướng', dataIndex: 'trendText', width: 160 },
-            {
-              title: 'Điểm',
-              dataIndex: 'totalPoints',
-              width: 100,
-              render: (value) => <span className={styles.totalPointsCell}>{value}</span>,
-            },
-          ]}
+          columns={columns}
           dataSource={ledger}
           scroll={{ x: 'max-content' }}
         />

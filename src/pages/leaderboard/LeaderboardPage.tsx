@@ -1,8 +1,11 @@
+import { useEffect } from 'react';
 import { Card, Space, Table, Tag, Typography } from 'antd';
 import type { TableColumnsType } from 'antd';
 import { observer } from 'mobx-react-lite';
 
 import type { GroupStandingTeam } from '../../../shared/types/groupStanding.ts';
+import { AppErrorState } from '../../components/AppState/AppErrorState.tsx';
+import { AppLoadingState } from '../../components/AppState/AppLoadingState.tsx';
 import { TeamLineupTrigger } from '../../components/MatchLineup/TeamLineupTrigger.tsx';
 import { appStore } from '../../store/matchStore.ts';
 import styles from './LeaderboardPage.module.scss';
@@ -66,9 +69,21 @@ const columns: TableColumnsType<GroupStandingTeam> = [
 ];
 
 export const LeaderboardPage = observer(function LeaderboardPage() {
-  const dashboard = appStore.dashboard;
+  const standings = appStore.standings;
 
-  if (!dashboard) {
+  useEffect(() => {
+    void appStore.loadLeaderboard('initial');
+  }, []);
+
+  if (appStore.leaderboardLoading && standings.length === 0) {
+    return <AppLoadingState message="Đang tải bảng xếp hạng..." />;
+  }
+
+  if (appStore.leaderboardErrorMessage && standings.length === 0) {
+    return <AppErrorState description={appStore.leaderboardErrorMessage} onRetry={() => {appStore.loadLeaderboard('initial')}} />;
+  }
+
+  if (standings.length === 0) {
     return null;
   }
 
@@ -82,7 +97,7 @@ export const LeaderboardPage = observer(function LeaderboardPage() {
       </Typography.Paragraph>
 
       <Space direction="vertical" size={16} style={{ width: '100%' }}>
-        {dashboard.standings.map((board) => (
+        {standings.map((board) => (
           <Card key={board.groupLabel} title={board.groupLabel} className={styles.groupCard}>
             <Table
               rowKey="teamName"

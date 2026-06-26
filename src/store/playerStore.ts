@@ -1,28 +1,26 @@
-import { makeAutoObservable, runInAction } from 'mobx';
+﻿import { makeAutoObservable, runInAction } from 'mobx';
 
 import { getPlayers, getTeamLineup } from '../services/apiService.ts';
+import { formatStoreError } from './storeUtils.ts';
 
 import type { PlayerListItem } from '../types/playerListItem.ts';
 import type { TeamLineup } from '../../shared/types/teamLineup.ts';
-
-function formatError(error: unknown, fallback: string) {
-  return error instanceof Error ? error.message : fallback;
-}
+import type { PlayerStoreContract, TeamLineupKey } from './playerStore.types.ts';
 
 function normalizeTeamName(teamName: string) {
   return teamName.trim().toLowerCase();
 }
 
-export class PlayerStore {
+export class PlayerStore implements PlayerStoreContract {
   players: PlayerListItem[] = [];
   playersLoading = false;
   playersLoaded = false;
   playersError: string | null = null;
   playersPromise: Promise<PlayerListItem[]> | null = null;
-  teamLineupPromises = new Map<string, Promise<TeamLineup | null>>();
-  teamLineups = new Map<string, TeamLineup | null>();
-  teamLineupLoading = new Map<string, boolean>();
-  teamLineupErrors = new Map<string, string | null>();
+  teamLineupPromises = new Map<TeamLineupKey, Promise<TeamLineup | null>>();
+  teamLineups = new Map<TeamLineupKey, TeamLineup | null>();
+  teamLineupLoading = new Map<TeamLineupKey, boolean>();
+  teamLineupErrors = new Map<TeamLineupKey, string | null>();
 
   constructor() {
     makeAutoObservable(
@@ -35,7 +33,7 @@ export class PlayerStore {
     );
   }
 
-  async loadPlayers() {
+  async loadPlayers(): Promise<PlayerListItem[]> {
     if (this.playersLoaded) {
       return this.players;
     }
@@ -59,7 +57,7 @@ export class PlayerStore {
       })
       .catch((error: unknown) => {
         runInAction(() => {
-          this.playersError = formatError(error, 'Không tải được danh sách cầu thủ.');
+          this.playersError = formatStoreError(error, 'KhÃ´ng táº£i Ä‘Æ°á»£c danh sÃ¡ch cáº§u thá»§.');
         });
 
         throw error;
@@ -75,19 +73,19 @@ export class PlayerStore {
     return request;
   }
 
-  getCachedTeamLineup(teamName: string) {
+  getCachedTeamLineup(teamName: string): TeamLineup | null {
     return this.teamLineups.get(normalizeTeamName(teamName)) ?? null;
   }
 
-  isTeamLineupLoading(teamName: string) {
+  isTeamLineupLoading(teamName: string): boolean {
     return this.teamLineupLoading.get(normalizeTeamName(teamName)) ?? false;
   }
 
-  getTeamLineupError(teamName: string) {
+  getTeamLineupError(teamName: string): string | null {
     return this.teamLineupErrors.get(normalizeTeamName(teamName)) ?? null;
   }
 
-  async loadTeamLineup(teamName: string) {
+  async loadTeamLineup(teamName: string): Promise<TeamLineup | null> {
     const normalized = normalizeTeamName(teamName);
     if (!normalized) {
       return null;
@@ -119,7 +117,7 @@ export class PlayerStore {
       })
       .catch((error: unknown) => {
         runInAction(() => {
-          this.teamLineupErrors.set(normalized, formatError(error, `Không tải được đội hình của ${teamName}.`));
+          this.teamLineupErrors.set(normalized, formatStoreError(error, `KhÃ´ng táº£i Ä‘Æ°á»£c Ä‘á»™i hÃ¬nh cá»§a ${teamName}.`));
         });
 
         throw error;

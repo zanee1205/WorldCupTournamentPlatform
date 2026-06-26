@@ -11,12 +11,12 @@ import { appStore } from './store/matchStore.ts';
 export default observer(function App() {
   useAppBootstrap();
 
-  if (appStore.loading && !appStore.dashboard) {
+  if (appStore.shellLoading && !appStore.summary) {
     return <AppLoadingState />;
   }
 
-  if (!appStore.dashboard) {
-    return <AppErrorState description={appStore.errorMessage ?? 'Vui lòng thử lại.'} />;
+  if (!appStore.summary) {
+    return <AppErrorState description={appStore.shellErrorMessage ?? 'Vui lòng thử lại.'} onRetry={() => { appStore.loadShell('initial'); }} />;
   }
 
   return (

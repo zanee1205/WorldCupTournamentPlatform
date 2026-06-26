@@ -7,9 +7,14 @@ import { refreshApp } from '../../hooks/useAppBootstrap.ts';
 type AppErrorStateProps = {
     message?: string;
     description?: string;
+    onRetry?: () => void | Promise<void>;
 };
 
-export function AppErrorState({ message = 'Không tải được dữ liệu.', description = 'Vui lòng thử lại.' }: AppErrorStateProps) {
+export function AppErrorState({
+    message = 'KhÃ´ng táº£i Ä‘Æ°á»£c dá»¯ liá»‡u.',
+    description = 'Vui lÃ²ng thá»­ láº¡i.',
+    onRetry,
+}: AppErrorStateProps) {
     return (
         <div className={styles.loadingScreen}>
             <Alert
@@ -21,10 +26,15 @@ export function AppErrorState({ message = 'Không tải được dữ liệu.', 
                     <Button
                         type="primary"
                         onClick={() => {
+                            if (onRetry) {
+                                void onRetry();
+                                return;
+                            }
+
                             void refreshApp('initial');
                         }}
                     >
-                        Thử lại
+                        Thá»­ láº¡i
                     </Button>
                 }
             />

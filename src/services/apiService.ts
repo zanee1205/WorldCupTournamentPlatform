@@ -1,6 +1,11 @@
 import axios from 'axios';
 
 import type { DashboardResponse } from '../../server/src/types/dashboardResponse.ts';
+import type { DashboardHomeResponse } from '../../server/src/types/dashboardHomeResponse.ts';
+import type { DashboardLeaderboardResponse } from '../../server/src/types/dashboardLeaderboardResponse.ts';
+import type { DashboardMatchesResponse } from '../../server/src/types/dashboardMatchesResponse.ts';
+import type { DashboardShellResponse } from '../../server/src/types/dashboardShellResponse.ts';
+import type { DashboardStatsResponse } from '../../server/src/types/dashboardStatsResponse.ts';
 import type { MatchPrediction } from '../../server/src/types/predictionInput.ts';
 import type { PlayerListItem } from '../types/playerListItem.ts';
 import type { TeamLineup } from '../../shared/types/teamLineup.ts';
@@ -37,6 +42,31 @@ const http = axios.create({
 
 export async function getDashboard() {
   const response = await http.get<DashboardResponse>('/dashboard');
+  return response.data;
+}
+
+export async function getDashboardShell() {
+  const response = await http.get<DashboardShellResponse>('/dashboard/shell');
+  return response.data;
+}
+
+export async function getDashboardHome() {
+  const response = await http.get<DashboardHomeResponse>('/dashboard/home');
+  return response.data;
+}
+
+export async function getDashboardLeaderboard() {
+  const response = await http.get<DashboardLeaderboardResponse>('/dashboard/leaderboard');
+  return response.data;
+}
+
+export async function getDashboardMatches() {
+  const response = await http.get<DashboardMatchesResponse>('/dashboard/matches');
+  return response.data;
+}
+
+export async function getDashboardStats() {
+  const response = await http.get<DashboardStatsResponse>('/dashboard/stats');
   return response.data;
 }
 

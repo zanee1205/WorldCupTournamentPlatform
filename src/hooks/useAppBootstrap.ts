@@ -1,11 +1,12 @@
 import { useEffect } from 'react';
 import { message } from 'antd';
 
-import { appStore, type RefreshMode } from '../store/matchStore.ts';
+import { appStore } from '../store/matchStore.ts';
+import type { RefreshMode } from '../store/matchStore.types.ts';
 
 export function refreshApp(mode: RefreshMode = 'background') {
-    return appStore.refresh(mode).catch((error) => {
-        message.error(error instanceof Error ? error.message : 'Không tải được dữ liệu.');
+    return appStore.loadShell(mode).catch((error) => {
+        message.error(error instanceof Error ? error.message : 'KhÃ´ng táº£i Ä‘Æ°á»£c dá»¯ liá»‡u.');
         throw error;
     });
 }

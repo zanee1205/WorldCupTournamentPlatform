@@ -2,8 +2,8 @@ import { Alert, Layout } from 'antd';
 import { Content } from 'antd/es/layout/layout';
 import { Outlet } from 'react-router-dom';
 
-import { AppFooter } from '../Footer.tsx';
-import { AppHeader } from '../Header.tsx';
+import { AppFooter } from '../footerSide.tsx';
+import { AppHeader } from '../headerSide.tsx';
 import styles from './MainLayout.module.scss';
 import type { TournamentMatch } from '../../../shared/types/tournamentMatch.ts';
 import { appStore } from '../../store/appStore.ts';

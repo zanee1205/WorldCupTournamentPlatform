@@ -35,7 +35,7 @@ export class AuthStore implements AuthStoreContract {
       },
       { autoBind: true },
     );
-    setUnauthorizedHandler(this.markUnauthenticated);
+    setUnauthorizedHandler(this.handleUnauthorized);
   }
 
   isAuthenticated() {
@@ -142,10 +142,11 @@ export class AuthStore implements AuthStoreContract {
 
     const currentPath = typeof window !== 'undefined' ? window.location.pathname : '';
     const isAuthEntryPage = currentPath === '/login' || currentPath === '/register';
+
     if (reason === 'logout' || isShowingExpiryModal || reason === 'bootstrap_401' || isAuthEntryPage) return;
 
     isShowingExpiryModal = true;
-    Modal.destroyAll(); // đóng hết modal cũ nếu có
+    Modal.destroyAll();
 
     Modal.confirm({
       title: 'Phiên đăng nhập đã hết hạn',
@@ -162,6 +163,18 @@ export class AuthStore implements AuthStoreContract {
     });
   }
 
+  handleUnauthorized(error: unknown) {
+    if (typeof error === 'object' && error !== null && 'response' in error) {
+      const response = (error as { response?: { status?: number } }).response;
+      if (response?.status === 401 || response?.status === 423) {
+        this.markUnauthenticated(response.status === 423 ? 'locked' : 'unauthorized');
+      }
+      return;
+    }
+
+    this.markUnauthenticated();
+  }
+
   async bootstrap() {
     if (this.bootstrapPromise) {
       return this.bootstrapPromise;
@@ -174,7 +187,7 @@ export class AuthStore implements AuthStoreContract {
       this.errorMessage = null;
     });
 
-    const request = getAuthSession()
+    const request = getAuthSession({ skipUnauthorizedHandler: true })
       .then((session) => {
         this.applySession(session, 'bootstrap');
         return session.user;
@@ -215,19 +228,21 @@ export class AuthStore implements AuthStoreContract {
       this.applySession(session, 'login');
       return session.user;
     } catch (error) {
-      this.markUnauthenticated('login_failed');
-
+      // 401/423 là lỗi credentials, không phải hết phiên
       if (error && typeof error === 'object' && 'response' in error) {
         const response = (error as { response?: { status?: number } }).response;
-        if (response?.status !== 401) {
+        if (response?.status !== 401 && response?.status !== 423) {
+          this.markUnauthenticated('login_failed');
           runInAction(() => {
             this.status = 'unauthenticated';
             this.errorMessage = formatStoreError(error, 'Không thể đăng nhập.');
           });
         }
+      } else {
+        this.markUnauthenticated('login_failed');
       }
 
-      throw error;
+      throw error; // LoginPage tự bắt và xử lý modal
     }
   }
 

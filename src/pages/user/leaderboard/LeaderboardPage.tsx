@@ -3,11 +3,11 @@ import { Card, Space, Table, Tag, Typography } from 'antd';
 import type { TableColumnsType } from 'antd';
 import { observer } from 'mobx-react-lite';
 
-import type { GroupStandingTeam } from '../../../shared/types/groupStanding.ts';
-import { AppErrorState } from '../../components/AppState/AppErrorState.tsx';
-import { AppLoadingState } from '../../components/AppState/AppLoadingState.tsx';
-import { TeamLineupTrigger } from '../../components/MatchLineup/TeamLineupTrigger.tsx';
-import { appStore } from '../../store/matchStore.ts';
+import type { GroupStandingTeam } from '../../../../shared/types/groupStanding.ts';
+import { AppErrorState } from '../../../components/AppState/AppErrorState.tsx';
+import { AppLoadingState } from '../../../components/AppState/AppLoadingState.tsx';
+import { TeamLineupTrigger } from '../../../components/MatchLineup/TeamLineupTrigger.tsx';
+import { appStore } from '../../../store/matchStore.ts';
 import styles from './LeaderboardPage.module.scss';
 
 const columns: TableColumnsType<GroupStandingTeam> = [
@@ -76,7 +76,7 @@ export const LeaderboardPage = observer(function LeaderboardPage() {
   }, []);
 
   if (appStore.leaderboardErrorMessage && standings.length === 0) {
-    return <AppErrorState description={appStore.leaderboardErrorMessage} onRetry={() => {appStore.loadLeaderboard('initial')}} />;
+    return <AppErrorState description={appStore.leaderboardErrorMessage} onRetry={() => { appStore.loadLeaderboard('initial') }} />;
   }
 
   if (!appStore.leaderboardLoaded && standings.length === 0) {

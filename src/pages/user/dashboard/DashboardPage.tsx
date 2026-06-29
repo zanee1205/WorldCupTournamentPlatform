@@ -3,12 +3,12 @@ import { Card, Progress, Statistic, Table, Tag, Typography } from 'antd';
 import type { TableColumnsType } from 'antd';
 import { observer } from 'mobx-react-lite';
 
-import { CountryFlag } from '../../components/CountryFlagIcon/CountryFlag.tsx';
-import { AppErrorState } from '../../components/AppState/AppErrorState.tsx';
-import { AppLoadingState } from '../../components/AppState/AppLoadingState.tsx';
-import { appStore } from '../../store/matchStore.ts';
+import { CountryFlag } from '../../../components/CountryFlagIcon/CountryFlag.tsx';
+import { AppErrorState } from '../../../components/AppState/AppErrorState.tsx';
+import { AppLoadingState } from '../../../components/AppState/AppLoadingState.tsx';
+import { appStore } from '../../../store/matchStore.ts';
 
-import type { ScoreLedgerEntry } from '../../../src/types/scoreLedgerEntry.ts';
+import type { ScoreLedgerEntry } from '../../../types/scoreLedgerEntry.ts';
 
 import styles from './DashboardPage.module.scss';
 
@@ -52,7 +52,7 @@ export const DashboardPage = observer(function DashboardPage() {
   }, []);
 
   if (appStore.dashboardErrorMessage && ledger.length === 0) {
-    return <AppErrorState description={appStore.dashboardErrorMessage} onRetry={() => {appStore.loadDashboardStats('initial')}} />;
+    return <AppErrorState description={appStore.dashboardErrorMessage} onRetry={() => { appStore.loadDashboardStats('initial') }} />;
   }
 
   if (!appStore.dashboardLoaded && ledger.length === 0) {

@@ -5,16 +5,16 @@ import { createBrowserRouter, Navigate, Outlet } from 'react-router-dom';
 import { AppLoadingState } from '../components/AppState/AppLoadingState.tsx';
 import { WorldcupDataProvider } from '../context/WorldcupDataContext.tsx';
 import MainLayout from '../layouts/MainLayout/MainLayout.tsx';
-import { DashboardPage } from '../pages/dashboard/DashboardPage.tsx';
-import { HomePage } from '../pages/homepage/HomePage.tsx';
-import { LeaderboardPage } from '../pages/leaderboard/LeaderboardPage.tsx';
+import { DashboardPage } from '../pages/user/dashboard/DashboardPage.tsx';
+import { HomePage } from '../pages/user/homepage/HomePage.tsx';
+import { LeaderboardPage } from '../pages/user/leaderboard/LeaderboardPage.tsx';
 import { LoginPage } from '../pages/auth/LoginPage.tsx';
-import { MatchListPage } from '../pages/matchlist/MatchListPage.tsx';
-import { PlayerListPage } from '../pages/playerlist/PlayerListPage.tsx';
+import { MatchListPage } from '../pages/user/matchlist/MatchListPage.tsx';
+import { PlayerListPage } from '../pages/user/playerlist/PlayerListPage.tsx';
 import { RegisterPage } from '../pages/auth/RegisterPage.tsx';
-import { ProfilePage } from '../pages/profileUser/ProfilePage.tsx';
+import { ProfilePage } from '../pages/user/profileUser/ProfilePage.tsx';
 import { authStore } from '../store/authStore.ts';
-import { EditProfilePage } from '../pages/profileUser/EditProfilePage.tsx';
+import { EditProfilePage } from '../pages/user/profileUser/EditProfilePage.tsx';
 
 const ProtectedRoute = observer(function ProtectedRoute() {
   if (authStore.status === 'checking') {

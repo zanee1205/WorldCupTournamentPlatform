@@ -30,6 +30,8 @@ const userSchema = new mongoose.Schema<UserDocument>(
     avatar: { type: String, default: null },
     fullName: { type: String, default: null },
     phoneNumber: { type: String, default: null },
+    failedLoginAttempts: { type: Number, default: 0 },
+    lockedUntil: { type: Date, default: null },
   },
   {
     versionKey: false,
@@ -275,6 +277,8 @@ async function createUser(payload: AuthRegisterInput) {
     avatar: avatar || null,
     fullName: fullName || null,
     phoneNumber: phoneNumber || null,
+    failedLoginAttempts: 0,
+    lockedUntil: null,
   });
 
   return sanitizeUser(created.toObject() as UserDocument & { _id: unknown });
@@ -377,12 +381,51 @@ export function createAuthRouter() {
         return;
       }
 
-      const user = await findUserByIdentifier(identifier);
-      if (!user || !verifyPassword(password, user.passwordHash)) {
+      // load mongoose document so we can update counters
+      const user = await UserModel.findOne({
+        $or: [{ account: normalizeIdentifier(identifier) }, { email: normalizeIdentifier(identifier) }],
+      });
+
+      if (!user) {
         clearAuthCookies(res);
         res.status(401).json({ message: 'Sai tài khoản/email hoặc mật khẩu.' });
         return;
       }
+
+      // check if account is locked
+      if (user.lockedUntil && user.lockedUntil.getTime() > Date.now()) {
+        const lockedUntilIso = user.lockedUntil.toISOString();
+        clearAuthCookies(res);
+        res.status(423).json({ message: 'Tài khoản bị khóa tạm thời.', lockedUntil: lockedUntilIso });
+        return;
+      }
+
+      if (!verifyPassword(password, user.passwordHash)) {
+        user.failedLoginAttempts = (user.failedLoginAttempts || 0) + 1;
+        const remaining = Math.max(0, 5 - user.failedLoginAttempts);
+
+        if (user.failedLoginAttempts >= 5) {
+          // lock account for 15 minutes
+          user.lockedUntil = new Date(Date.now() + 15 * 60 * 1000);
+        }
+
+        await user.save();
+
+        clearAuthCookies(res);
+
+        if (user.lockedUntil && user.lockedUntil.getTime() > Date.now()) {
+          res.status(423).json({ message: 'Tài khoản đã bị khóa do quá nhiều lần đăng nhập thất bại.', lockedUntil: user.lockedUntil.toISOString() });
+          return;
+        }
+
+        res.status(401).json({ message: 'Sai tài khoản/email hoặc mật khẩu.', failedAttempts: user.failedLoginAttempts, remainingAttempts: remaining });
+        return;
+      }
+
+      // successful login: reset counters
+      user.failedLoginAttempts = 0;
+      user.lockedUntil = null;
+      await user.save();
 
       const authUser = sanitizeUser(user);
       const tokens = issueAuthTokens(authUser);

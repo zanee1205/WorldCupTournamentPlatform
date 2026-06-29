@@ -3,15 +3,15 @@ import { observer } from 'mobx-react-lite';
 import { Button, Card, Table, Tag, Input, Space, Typography, Statistic } from 'antd';
 import type { TableColumnsType } from 'antd';
 
-import { formatDateTime } from '../../../shared/date.js';
-import type { PaginationState } from '../../types/paginationstate.ts';
-import type { TournamentMatch } from '../../../shared/types/tournamentMatch.ts';
-import { AppErrorState } from '../../components/AppState/AppErrorState.tsx';
-import { AppLoadingState } from '../../components/AppState/AppLoadingState.tsx';
-import { appStore } from '../../store/matchStore.ts';
+import { formatDateTime } from '../../../../shared/date.js';
+import type { PaginationState } from '../../../types/paginationstate.ts';
+import type { TournamentMatch } from '../../../../shared/types/tournamentMatch.ts';
+import { AppErrorState } from '../../../components/AppState/AppErrorState.tsx';
+import { AppLoadingState } from '../../../components/AppState/AppLoadingState.tsx';
+import { appStore } from '../../../store/matchStore.ts';
 
 import styles from './MatchListPage.module.scss';
-import { TeamLineupTrigger } from '../../components/MatchLineup/TeamLineupTrigger.tsx';
+import { TeamLineupTrigger } from '../../../components/MatchLineup/TeamLineupTrigger.tsx';
 
 export const MatchListPage = observer(function MatchListPage() {
   const matches = appStore.matches;
@@ -161,7 +161,7 @@ export const MatchListPage = observer(function MatchListPage() {
   }, [filteredMatches.length]);
 
   if (appStore.matchListErrorMessage && matches.length === 0) {
-        return <AppErrorState description={appStore.matchListErrorMessage} onRetry={() => {appStore.loadMatchList('initial')}} />;
+    return <AppErrorState description={appStore.matchListErrorMessage} onRetry={() => { appStore.loadMatchList('initial') }} />;
   }
 
   if (!appStore.matchListLoaded && matches.length === 0) {

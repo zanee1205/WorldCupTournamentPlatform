@@ -5,14 +5,14 @@ import { Button, Card, Calendar, Drawer, Empty, List, Progress, Space, Tag, Tool
 import type { CalendarProps } from 'antd';
 import dayjs, { type Dayjs } from 'dayjs';
 
-import { formatDateTime } from '../../../shared/date.ts';
-import type { TournamentMatch } from '../../../shared/types/tournamentMatch.ts';
-import { AppErrorState } from '../../components/AppState/AppErrorState.tsx';
-import { AppLoadingState } from '../../components/AppState/AppLoadingState.tsx';
-import { CountryFlag } from '../../components/CountryFlagIcon/CountryFlag.tsx';
-import { TeamLineupModal } from '../../components/MatchLineup/TeamLineupModal.tsx';
-import { useBreakpoint } from '../../hooks/useViewport.ts';
-import { appStore } from '../../store/matchStore.ts';
+import { formatDateTime } from '../../../../shared/date.ts';
+import type { TournamentMatch } from '../../../../shared/types/tournamentMatch.ts';
+import { AppErrorState } from '../../../components/AppState/AppErrorState.tsx';
+import { AppLoadingState } from '../../../components/AppState/AppLoadingState.tsx';
+import { CountryFlag } from '../../../components/CountryFlagIcon/CountryFlag.tsx';
+import { TeamLineupModal } from '../../../components/MatchLineup/TeamLineupModal.tsx';
+import { useBreakpoint } from '../../../hooks/useViewport.ts';
+import { appStore } from '../../../store/matchStore.ts';
 import styles from './HomePage.module.scss';
 
 function resolveMatchTeams(match: TournamentMatch) {

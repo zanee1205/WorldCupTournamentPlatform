@@ -7,4 +7,6 @@ export interface UserDocument {
     phoneNumber?: string | null;
     createdAt?: Date;
     updatedAt?: Date;
+    failedLoginAttempts: number;
+    lockedUntil: Date | null;
 }

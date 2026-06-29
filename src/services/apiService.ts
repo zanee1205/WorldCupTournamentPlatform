@@ -82,6 +82,10 @@ http.interceptors.request.use((config) => {
 
 type UnauthorizedHandler = ((error: unknown) => void) | null;
 
+type HttpRequestConfig = import('axios').AxiosRequestConfig & {
+  skipUnauthorizedHandler?: boolean;
+};
+
 let unauthorizedHandler: UnauthorizedHandler = null;
 
 export function setUnauthorizedHandler(handler: UnauthorizedHandler) {
@@ -98,8 +102,11 @@ http.interceptors.response.use(
     return response;
   },
   (error) => {
-    if (axios.isAxiosError(error) && error.response?.status === 401) {
-      unauthorizedHandler?.(error);
+    if (axios.isAxiosError(error) && (error.response?.status === 401 || error.response?.status === 423)) {
+      const config = error.config as HttpRequestConfig | undefined;
+      if (!config?.skipUnauthorizedHandler) {
+        unauthorizedHandler?.(error);
+      }
     }
 
     return Promise.reject(error);
@@ -116,8 +123,8 @@ export async function refreshWorldcupFeed() {
   return response.data;
 }
 
-export async function getAuthSession() {
-  const response = await http.get<AuthSessionResponse>('/auth/me');
+export async function getAuthSession(config?: HttpRequestConfig) {
+  const response = await http.get<AuthSessionResponse>('/auth/me', config);
   return response.data;
 }
 

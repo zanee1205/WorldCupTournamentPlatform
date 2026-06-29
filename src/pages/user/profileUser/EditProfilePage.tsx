@@ -3,9 +3,9 @@ import { Avatar, Button, Card, Col, Form, Input, Row, Space, Tag, Typography, me
 import { observer } from 'mobx-react-lite';
 import { useNavigate } from 'react-router-dom';
 
-import { authStore } from '../../store/authStore.ts';
-import type { AuthProfileUpdateInput } from '../../types/auth.ts';
-import type { ProfileFormValues } from '../../types/profileFormValue.ts';
+import { authStore } from '../../../store/authStore.ts';
+import type { AuthProfileUpdateInput } from '../../../types/auth.ts';
+import type { ProfileFormValues } from '../../../types/profileFormValue.ts';
 import styles from './EditProfilePage.module.scss';
 
 function getInitials(value: string) {

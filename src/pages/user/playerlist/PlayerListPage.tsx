@@ -3,10 +3,10 @@ import { useEffect, useMemo, useState } from 'react';
 import { Alert, Card, Empty, Input, Pagination, Select, Skeleton, Space, Tag, Typography } from 'antd';
 import { observer } from 'mobx-react-lite';
 
-import { TeamLineupTrigger } from '../../components/MatchLineup/TeamLineupTrigger.tsx';
-import { useDebounce } from '../../hooks/useDebounce.ts';
-import { playerStore } from '../../store/playerStore.ts';
-import type { PlayerListItem } from '../../types/playerListItem.ts';
+import { TeamLineupTrigger } from '../../../components/MatchLineup/TeamLineupTrigger.tsx';
+import { useDebounce } from '../../../hooks/useDebounce.ts';
+import { playerStore } from '../../../store/playerStore.ts';
+import type { PlayerListItem } from '../../../types/playerListItem.ts';
 import styles from './PlayerListPage.module.scss';
 
 type PlayerCardMediaProps = {

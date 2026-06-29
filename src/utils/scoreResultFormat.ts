@@ -6,12 +6,35 @@ import type { WorldCupGoal } from '../types/worldCupGoal';
 import { buildStandings } from './standings';
 import { buildVenueStats } from './venues';
 
+function normalizeBracketReference(value: string) {
+    return value.trim().toUpperCase();
+}
+
+function formatBracketPlaceholderLabel(value: string) {
+    const normalized = normalizeBracketReference(value);
+    const refMatch = normalized.match(/^([WL])(\d+)$/);
+    if (!refMatch) {
+        return safeString(value);
+    }
+
+    const [, kind, num] = refMatch;
+    return kind === 'W' ? `W${num}` : `L${num}`;
+}
+
+function resolveBracketTeamLabel(value: string) {
+    return formatBracketPlaceholderLabel(value);
+}
+
 export function normalizeWorldcupData(json: OpenFootballJson, sourceUrl: string): WorldCupData {
     const stageEntries: Array<{ rawKey: string; matches: OpenFootballMatch[] }> = [];
 
-    if (json.stages && typeof json.stages === 'object') {
-        for (const [stageKey, matches] of Object.entries(json.stages)) {
-            stageEntries.push({ rawKey: String(stageKey), matches: Array.isArray(matches) ? (matches as OpenFootballMatch[]) : [] });
+    const stages = (json as OpenFootballJson & { stages?: Record<string, OpenFootballMatch[]> }).stages;
+    if (stages && typeof stages === 'object') {
+        for (const [stageKey, matches] of Object.entries(stages)) {
+            stageEntries.push({
+                rawKey: String(stageKey),
+                matches: Array.isArray(matches) ? (matches as OpenFootballMatch[]) : [],
+            });
         }
     }
 
@@ -23,8 +46,15 @@ export function normalizeWorldcupData(json: OpenFootballJson, sourceUrl: string)
 
     for (const stageEntry of stageEntries) {
         for (const match of stageEntry.matches) {
-            const homeTeam = safeString(match.team1);
-            const awayTeam = safeString(match.team2);
+            const stage = safeString(match.stage) || stageEntry.rawKey || 'unknown';
+            const rawHomeTeam = safeString(match.team1);
+            const rawAwayTeam = safeString(match.team2);
+            const homeTeam = stage.toLowerCase().includes('group')
+                ? rawHomeTeam
+                : resolveBracketTeamLabel(rawHomeTeam);
+            const awayTeam = stage.toLowerCase().includes('group')
+                ? rawAwayTeam
+                : resolveBracketTeamLabel(rawAwayTeam);
             const rawDate = safeString(match.date);
             const rawTime = safeString(match.time);
             const venue = safeString(match.ground);
@@ -51,16 +81,17 @@ export function normalizeWorldcupData(json: OpenFootballJson, sourceUrl: string)
             }
 
             matches.push({
-                id: makeId([stageEntry.rawKey, rawDate, rawTime, homeTeam, awayTeam].join('|')),
-                stage: safeString(match.stage) || stageEntry.rawKey || 'unknown',
+                id: makeId([stageEntry.rawKey, rawDate, rawTime, rawHomeTeam, rawAwayTeam].join('|')),
+                num: match.num,
+                stage,
                 round: safeString(match.round),
                 group: safeString(match.group),
                 date: rawDate,
                 time: rawTime,
                 dateKey: toDateKey(rawDate),
                 timeLabel: toVietnamTimeLabel(rawTime),
-                homeTeam,
-                awayTeam,
+                homeTeam: homeTeam || rawHomeTeam,
+                awayTeam: awayTeam || rawAwayTeam,
                 venue,
                 status: homeScore !== null && awayScore !== null ? 'finished' : 'scheduled',
                 score:

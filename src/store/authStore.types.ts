@@ -6,7 +6,6 @@ export interface AuthStoreState {
   status: AuthStatus;
   user: AuthUser | null;
   accessToken: string | null;
-  accessTokenExpiresAt: string | null;
   errorMessage: string | null;
 }
 
@@ -20,4 +19,4 @@ export interface AuthStoreActions {
   isAuthenticated(): boolean;
 }
 
-export interface AuthStoreContract extends AuthStoreState, AuthStoreActions {}
+export interface AuthStoreContract extends AuthStoreState, AuthStoreActions { }

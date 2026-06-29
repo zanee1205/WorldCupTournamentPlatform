@@ -20,7 +20,6 @@ const REFRESH_SECRET = process.env.JWT_REFRESH_SECRET?.trim() || process.env.JWT
 type AuthResult = {
   user: AuthUser;
   accessToken: string;
-  accessTokenExpiresAt: string;
 };
 
 const userSchema = new mongoose.Schema<UserDocument>(
@@ -223,7 +222,6 @@ function issueAuthTokens(user: AuthUser) {
 
   return {
     accessToken: access.token,
-    accessTokenExpiresAt: access.expiresAt,
     refreshToken: refresh.token,
   };
 }
@@ -232,7 +230,6 @@ function toAuthResponse(result: AuthResult): AuthSessionResponse {
   return {
     user: result.user,
     accessToken: result.accessToken,
-    accessTokenExpiresAt: result.accessTokenExpiresAt,
   };
 }
 
@@ -311,17 +308,16 @@ async function authenticateWithRefresh(req: express.Request, res: express.Respon
     return {
       user: authUser,
       accessToken: accessToken as string,
-      accessTokenExpiresAt: new Date(accessPayload.exp * 1000).toISOString(),
     };
   }
 
   const tokens = issueAuthTokens(authUser);
   res.cookie(ACCESS_COOKIE, tokens.accessToken, cookieOptions(ACCESS_TOKEN_TTL_SECONDS * 1000));
+  res.setHeader('x-access-token', tokens.accessToken);
 
   return {
     user: authUser,
     accessToken: tokens.accessToken,
-    accessTokenExpiresAt: tokens.accessTokenExpiresAt,
   };
 }
 
@@ -329,18 +325,17 @@ export function requireAuth(req: express.Request, res: express.Response, next: e
   void (async () => {
     const auth = await authenticateWithRefresh(req, res);
     if (!auth) {
-      res.status(401).json({ message: 'Phien dang nhap da het han. Vui long dang nhap lai.' });
+      res.status(401).json({ message: 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.' });
       return;
     }
 
     res.locals.authUser = auth.user;
     res.locals.accessToken = auth.accessToken;
-    res.locals.accessTokenExpiresAt = auth.accessTokenExpiresAt;
     next();
   })().catch((error) => {
     console.error('[auth] middleware error', error);
     clearAuthCookies(res);
-    res.status(500).json({ message: 'Khong the xac thuc nguoi dung.' });
+    res.status(500).json({ message: 'Không thể xác thực người dùng.' });
   });
 }
 
@@ -378,14 +373,14 @@ export function createAuthRouter() {
 
       if (!identifier || !password) {
         clearAuthCookies(res);
-        res.status(400).json({ message: 'Thieu thong tin dang nhap.' });
+        res.status(400).json({ message: 'Thiếu thông tin đăng nhập.' });
         return;
       }
 
       const user = await findUserByIdentifier(identifier);
       if (!user || !verifyPassword(password, user.passwordHash)) {
         clearAuthCookies(res);
-        res.status(401).json({ message: 'Sai tai khoan/email hoac mat khau.' });
+        res.status(401).json({ message: 'Sai tài khoản/email hoặc mật khẩu.' });
         return;
       }
 
@@ -395,7 +390,7 @@ export function createAuthRouter() {
       res.json(toAuthResponse({ user: authUser, ...tokens }));
     } catch {
       clearAuthCookies(res);
-      res.status(500).json({ message: 'Khong the dang nhap.' });
+      res.status(500).json({ message: 'Không thể đăng nhập.' });
     }
   });
 
@@ -403,7 +398,6 @@ export function createAuthRouter() {
     res.json(toAuthResponse({
       user: res.locals.authUser,
       accessToken: res.locals.accessToken,
-      accessTokenExpiresAt: res.locals.accessTokenExpiresAt,
     }));
   });
 
@@ -438,7 +432,7 @@ export function createAuthRouter() {
 
       if (!updated) {
         clearAuthCookies(res);
-        res.status(404).json({ message: 'Khong tim thay nguoi dung.' });
+        res.status(404).json({ message: 'Không tìm thấy người dùng.' });
         return;
       }
 
@@ -446,11 +440,10 @@ export function createAuthRouter() {
       res.json(toAuthResponse({
         user: authUser,
         accessToken: res.locals.accessToken,
-        accessTokenExpiresAt: res.locals.accessTokenExpiresAt,
       }));
     } catch (error) {
       console.error('[auth] profile update failed', error);
-      res.status(500).json({ message: 'Khong the cap nhat ho so.' });
+      res.status(500).json({ message: 'Không thể cập nhật hồ sơ.' });
     }
   });
 
@@ -458,7 +451,6 @@ export function createAuthRouter() {
     res.json(toAuthResponse({
       user: res.locals.authUser,
       accessToken: res.locals.accessToken,
-      accessTokenExpiresAt: res.locals.accessTokenExpiresAt,
     }));
   });
 

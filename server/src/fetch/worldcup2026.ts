@@ -20,6 +20,7 @@ type OpenFootballMatch = {
   team2?: string;
   date?: string;
   time?: string;
+  num?: number;
   round?: string;
   group?: string;
   ground?: string;
@@ -121,20 +122,23 @@ function toVietnamDateKeyAndTime(date?: string, time?: string): { dateKey: strin
   };
 }
 
+function normalizeBracketReference(value: string) {
+  return value.trim().toUpperCase();
+}
 
+function formatBracketPlaceholderLabel(ref: string) {
+  const normalized = normalizeBracketReference(ref);
+  const match = normalized.match(/^([WL])(\d+)$/);
+  if (!match) {
+    return toTeamNameEN(ref);
+  }
 
-function mapOpenfootballStageToInternal(stageRaw: string | undefined): MatchStage {
-  const s = (stageRaw ?? '').toLowerCase();
+  const [, kind, num] = match;
+  return kind === 'W' ? `Thắng trận ${num}` : `Thua trận ${num}`;
+}
 
-  if (s.includes('group')) return 'group';
-  if (s.includes('round of 32') || s.includes('roundof32') || s.includes('r16') || s.includes('32')) return 'round_of_32';
-  if (s.includes('round of 16') || s.includes('roundof16') || s.includes('r8') || s.includes('16')) return 'round_of_16';
-  if (s.includes('quarter')) return 'quarterfinal';
-  if (s.includes('semi')) return 'semifinal';
-  if (s.includes('third')) return 'third_place';
-  if (s.includes('final')) return 'final';
-
-  return 'group';
+function resolveBracketTeamLabel(value: string) {
+  return formatBracketPlaceholderLabel(value);
 }
 
 function normalizeStageLabel(stage: MatchStage): string {
@@ -179,9 +183,7 @@ function extractHalftime(match: OpenFootballMatch): { halftimeHomeScore: number 
   };
 }
 
-function extractGoals(match: OpenFootballMatch): MatchResult['goals'] {
-  const homeTeam = toTeamNameEN(safeString(match.team1));
-  const awayTeam = toTeamNameEN(safeString(match.team2));
+function extractGoals(match: OpenFootballMatch, homeTeam: string, awayTeam: string): MatchResult['goals'] {
 
   const homeGoals = (match.goals1 ?? []).map((g) => ({
     team: homeTeam,
@@ -253,11 +255,11 @@ export async function fetchWorldcup2026Matches(): Promise<Worldcup2026FetchOutpu
     const s = parts.join(' ').toLowerCase();
 
     if (s.includes('third')) return 'third_place';
-    if (s.includes('final') && !s.includes('third')) return 'final';
     if (s.includes('semi') || s.includes('semifinal')) return 'semifinal';
     if (s.includes('quarter') || s.includes('1/4')) return 'quarterfinal';
     if (s.includes('round of 32') || s.includes('roundof32') || s.includes('r32') || /\b32\b/.test(s)) return 'round_of_32';
     if (s.includes('round of 16') || s.includes('roundof16') || s.includes('r16') || s.includes('1/8') || /\b16\b/.test(s)) return 'round_of_16';
+    if (s.includes('final') && !s.includes('third')) return 'final';
 
     // Many feeds use 'Matchday 1/2/3' to represent group matchdays; treat as group.
     if (s.includes('matchday') || s.includes('day') && /matchday|day\s*\d+/i.test(s)) return 'group';
@@ -272,8 +274,14 @@ export async function fetchWorldcup2026Matches(): Promise<Worldcup2026FetchOutpu
   for (const stageEntry of stageEntries) {
     for (const m of stageEntry.matches) {
       const stage = determineStage(stageEntry.rawKey, m);
-      const homeLabel = toTeamNameEN(safeString(m.team1));
-      const awayLabel = toTeamNameEN(safeString(m.team2));
+      const rawHomeLabel = safeString(m.team1);
+      const rawAwayLabel = safeString(m.team2);
+      const homeLabel = stage === 'group'
+        ? toTeamNameEN(rawHomeLabel)
+        : resolveBracketTeamLabel(rawHomeLabel);
+      const awayLabel = stage === 'group'
+        ? toTeamNameEN(rawAwayLabel)
+        : resolveBracketTeamLabel(rawAwayLabel);
 
       const { dateKey, timeLabel } = toVietnamDateKeyAndTime(m.date, m.time);
 
@@ -282,11 +290,11 @@ export async function fetchWorldcup2026Matches(): Promise<Worldcup2026FetchOutpu
       const groupLabel = safeString(m.group) || null;
       const venue = safeString(m.ground) || null;
 
-      const id = makeDeterministicId([groupLabel ?? '', dateKey, homeLabel, awayLabel].join('|').toLowerCase());
+      const id = makeDeterministicId([groupLabel ?? '', dateKey, rawHomeLabel, rawAwayLabel].join('|').toLowerCase());
 
       const { actualHomeScore, actualAwayScore } = extractFinal(m);
       const halftime = extractHalftime(m);
-      const goals = extractGoals(m);
+      const goals = extractGoals(m, homeLabel, awayLabel);
 
       const result: MatchResult | null =
         actualHomeScore !== null && actualAwayScore !== null

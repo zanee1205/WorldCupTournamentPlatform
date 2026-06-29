@@ -49,8 +49,8 @@
 
 .brandText {
     color: #ffffff;
-    font-size: 26px;
-    font-weight: 600;
+    font-size: 35px;
+    font-weight: 700;
     white-space: nowrap;
     animation: flamePulse 2.5s ease-in-out infinite;
 }
@@ -79,6 +79,15 @@
         background: rgba(255, 255, 255, 0.14) !important;
         border-color: rgba(255, 255, 255, 0.2) !important;
     }
+}
+
+.accountAvatar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.12);
+    color: #fafafa;
+    border: 1px solid rgba(255, 255, 255, 0.16);
 }
 
 .accountName {
@@ -166,4 +175,9 @@
     .accountName {
         max-width: 120px;
     }
+}
+
+.brandLink {
+    text-decoration: none;
+    color: inherit;
 }

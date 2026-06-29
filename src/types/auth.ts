@@ -12,7 +12,6 @@ export interface AuthUser {
 export interface AuthSessionResponse {
   user: AuthUser;
   accessToken: string;
-  accessTokenExpiresAt: string;
 }
 
 export interface AuthLoginInput {

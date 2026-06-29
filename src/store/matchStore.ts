@@ -6,6 +6,7 @@ import {
   getDashboardMatches,
   getDashboardShell,
   getDashboardStats,
+  refreshWorldcupFeed,
   savePrediction as savePredictionApi,
 } from '../services/apiService.ts';
 import { formatStoreError } from './storeUtils.ts';
@@ -78,6 +79,7 @@ export class MatchStore implements MatchStoreContract {
   private leaderboardPromise: Promise<LeaderboardDashboardData | null> | null = null;
   private matchListPromise: Promise<MatchListDashboardData | null> | null = null;
   private dashboardPromise: Promise<DashboardStatsData | null> | null = null;
+  private syncPromise: Promise<void> | null = null;
 
   constructor() {
     makeAutoObservable(this, {}, { autoBind: true });
@@ -136,6 +138,30 @@ export class MatchStore implements MatchStoreContract {
     }
 
     await Promise.all(tasks);
+  }
+
+  async syncFromUpstream() {
+    if (this.syncPromise) {
+      return this.syncPromise;
+    }
+
+    const request = (async () => {
+      try {
+        await refreshWorldcupFeed();
+      } catch (error) {
+        // Keep the UI usable even if upstream sync fails; local data can still refresh.
+        console.warn('[matchStore] upstream refresh failed', error);
+      }
+
+      await this.refreshLoadedSlices();
+    })().finally(() => {
+      runInAction(() => {
+        this.syncPromise = null;
+      });
+    });
+
+    this.syncPromise = request;
+    return request;
   }
 
   async loadShell(mode: RefreshMode = 'background') {

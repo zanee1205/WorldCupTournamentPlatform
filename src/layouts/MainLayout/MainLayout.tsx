@@ -22,6 +22,37 @@ function MainLayout({
         void appStore.loadShell('initial');
     }, []);
 
+    useEffect(() => {
+        void appStore.syncFromUpstream();
+
+        const refreshInterval = window.setInterval(() => {
+            void appStore.syncFromUpstream();
+        }, 5 * 60 * 1000);
+
+        const handleVisibilityChange = () => {
+            if (document.visibilityState === 'visible') {
+                void appStore.syncFromUpstream();
+            }
+        };
+
+        window.addEventListener('focus', handleVisibilityChange);
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+
+        return () => {
+            window.clearInterval(refreshInterval);
+            window.removeEventListener('focus', handleVisibilityChange);
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+        };
+    }, []);
+
+    const isRefreshing =
+        refreshing ||
+        appStore.shellRefreshing ||
+        appStore.homeRefreshing ||
+        appStore.leaderboardRefreshing ||
+        appStore.matchListRefreshing ||
+        appStore.dashboardRefreshing;
+
     if (appStore.shellLoading && !appStore.summary) {
         return <AppLoadingState message="Đang tải dữ liệu ứng dụng..." />;
     }
@@ -38,7 +69,7 @@ function MainLayout({
         <Layout className={styles.appLayout}>
             <AppHeader />
             <Content className={styles.appContent}>
-                {refreshing ? <Alert type="info" message="Đang đồng bộ dữ liệu..." showIcon className="mb-3" /> : null}
+                {isRefreshing ? <Alert type="info" message="Đang đồng bộ dữ liệu..." showIcon className="mb-3" /> : null}
                 <Outlet />
             </Content>
             <AppFooter />

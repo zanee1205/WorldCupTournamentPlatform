@@ -34,6 +34,7 @@ export function createApp(repository: TournamentRepository) {
       return callback(new Error('Not allowed by CORS'));
     },
     credentials: true,
+    exposedHeaders: ['x-access-token'],
   }));
   app.use(express.json({ limit: '2mb' }));
 

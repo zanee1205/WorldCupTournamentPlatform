@@ -16,8 +16,6 @@ const rawApi = (import.meta.env.VITE_API_URL as string) ?? '';
 
 let sanitized = rawApi?.trim() ?? '';
 
-// Normalize: remove trailing slash and strip any trailing `/api` segment so
-// callers build endpoints consistently.
 sanitized = sanitized.replace(/\/$/, '');
 if (sanitized.toLowerCase().endsWith('/api')) {
   sanitized = sanitized.replace(/\/api$/i, '');
@@ -31,12 +29,55 @@ export function apiPath(path: string) {
   return `${API_BASE}${path}`;
 }
 
+const LOCAL_STORAGE_ACCESS_TOKEN_KEY = 'access_token';
+
+export function getStoredAccessToken() {
+  if (typeof window === 'undefined') {
+    return null;
+  }
+
+  try {
+    return window.localStorage.getItem(LOCAL_STORAGE_ACCESS_TOKEN_KEY)?.trim() || null;
+  } catch {
+    return null;
+  }
+}
+
+export function setStoredAccessToken(accessToken: string | null) {
+  if (typeof window === 'undefined') {
+    return;
+  }
+
+  try {
+    if (accessToken) {
+      window.localStorage.setItem(LOCAL_STORAGE_ACCESS_TOKEN_KEY, accessToken);
+    } else {
+      window.localStorage.removeItem(LOCAL_STORAGE_ACCESS_TOKEN_KEY);
+    }
+  } catch {
+    // ignore storage errors
+  }
+}
+
 const http = axios.create({
   baseURL: API_BASE ? `${API_BASE}/api` : '/api',
   withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
   },
+});
+
+http.interceptors.request.use((config) => {
+  const token = getStoredAccessToken();
+  if (token) {
+    config.headers = config.headers ?? {};
+
+    if (!('Authorization' in config.headers)) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+  }
+
+  return config;
 });
 
 type UnauthorizedHandler = ((error: unknown) => void) | null;
@@ -48,7 +89,14 @@ export function setUnauthorizedHandler(handler: UnauthorizedHandler) {
 }
 
 http.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    const updatedAccessToken = response.headers['x-access-token'];
+    if (updatedAccessToken && typeof updatedAccessToken === 'string') {
+      setStoredAccessToken(updatedAccessToken);
+      console.log('[auth] refreshed access token from response header');
+    }
+    return response;
+  },
   (error) => {
     if (axios.isAxiosError(error) && error.response?.status === 401) {
       unauthorizedHandler?.(error);
@@ -60,6 +108,11 @@ http.interceptors.response.use(
 
 export async function getDashboard() {
   const response = await http.get<DashboardResponse>('/dashboard');
+  return response.data;
+}
+
+export async function refreshWorldcupFeed() {
+  const response = await http.post('/refresh');
   return response.data;
 }
 
@@ -124,7 +177,7 @@ export async function getTeamLineup(teamName: string): Promise<TeamLineup | null
     return response.data;
   } catch (error) {
     if (axios.isAxiosError(error) && error.response?.status === 404) {
-      return null; // ← để component tự xử lý trường hợp không có data
+      return null;
     }
     throw error;
   }

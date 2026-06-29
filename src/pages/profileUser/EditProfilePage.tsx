@@ -154,7 +154,6 @@ export const EditProfilePage = observer(function EditProfilePage() {
             <Tag color="geekblue" className={styles.liveTag}>
               Đang hoạt động
             </Tag>
-            <Button onClick={() => navigate('/profile')}>Xem hồ sơ</Button>
           </Space>
         </div>
 
@@ -237,7 +236,6 @@ export const EditProfilePage = observer(function EditProfilePage() {
 
                 <Form.Item
                   label="Avatar"
-                  extra="Tải ảnh từ máy tính lên. Ảnh sẽ tự được nén trước khi lưu."
                 >
                   <div className={styles.avatarUploadCard}>
                     <div className={styles.avatarUploadPreview}>
@@ -255,8 +253,7 @@ export const EditProfilePage = observer(function EditProfilePage() {
                         {avatarValue ? 'Đã có ảnh đại diện' : 'Chưa có ảnh đại diện'}
                       </Typography.Text>
                       <Typography.Paragraph className={styles.uploadDescription}>
-                        Chọn file PNG, JPG hoặc WebP từ thiết bị của bạn. Hệ thống sẽ nén ảnh
-                        trước khi gửi để tránh lỗi payload quá lớn.
+                        Chọn file PNG, JPG hoặc WebP từ thiết bị của bạn.
                       </Typography.Paragraph>
 
                       <Space wrap>
@@ -284,7 +281,6 @@ export const EditProfilePage = observer(function EditProfilePage() {
                     <Form.Item
                       label="Họ tên"
                       name="fullName"
-                      extra="Tên hiển thị trên header và trang hồ sơ."
                     >
                       <Input size="large" placeholder="Nhập họ tên" />
                     </Form.Item>
@@ -293,7 +289,6 @@ export const EditProfilePage = observer(function EditProfilePage() {
                     <Form.Item
                       label="Số điện thoại"
                       name="phoneNumber"
-                      extra="Để lại liên hệ khi cần."
                     >
                       <Input size="large" placeholder="Nhập số điện thoại" />
                     </Form.Item>
@@ -310,7 +305,7 @@ export const EditProfilePage = observer(function EditProfilePage() {
 
                   <div className={styles.actions}>
                     <Button onClick={() => navigate('/profile')}>Hủy</Button>
-                    <Button type="primary" htmlType="submit" size="large" loading={submitting}>
+                    <Button type="primary" htmlType="submit" loading={submitting}>
                       Lưu thay đổi
                     </Button>
                   </div>

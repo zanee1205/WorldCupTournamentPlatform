@@ -2,6 +2,7 @@ import { OpenFootballGoal } from "./worldCupGoal";
 import { OpenFootballScore } from "./openFootballScore";
 
 export type WorldCupMatchCore = {
+    num?: number;
     stage: string;
     round: string;
     group: string;

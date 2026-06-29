@@ -1,4 +1,5 @@
 ﻿import { makeAutoObservable, runInAction } from 'mobx';
+import { Modal } from 'antd';
 
 import { appStore } from './matchStore.ts';
 import { formatStoreError } from './storeUtils.ts';
@@ -14,30 +15,23 @@ import {
 import type { AuthLoginInput, AuthProfileUpdateInput, AuthRegisterInput, AuthSessionResponse, AuthUser } from '../types/auth.ts';
 import type { AuthStoreContract, AuthStatus } from './authStore.types.ts';
 
-function formatCountdown(milliseconds: number) {
-  const totalSeconds = Math.max(0, Math.ceil(milliseconds / 1000));
-  const minutes = Math.floor(totalSeconds / 60)
-    .toString()
-    .padStart(2, '0');
-  const seconds = (totalSeconds % 60).toString().padStart(2, '0');
-  return `${minutes}:${seconds}`;
-}
+let isShowingExpiryModal = false;
 
 export class AuthStore implements AuthStoreContract {
+  private static readonly ACCESS_TOKEN_KEY = 'access_token';
+
   status: AuthStatus = 'checking';
   user: AuthUser | null = null;
   accessToken: string | null = null;
-  accessTokenExpiresAt: string | null = null;
   errorMessage: string | null = null;
   bootstrapPromise: Promise<AuthUser | null> | null = null;
-  tokenCountdownInterval: ReturnType<typeof setInterval> | null = null;
+  private hasShownExpiryModal = false;
 
   constructor() {
     makeAutoObservable(
       this,
       {
         bootstrapPromise: false,
-        tokenCountdownInterval: false,
       },
       { autoBind: true },
     );
@@ -48,75 +42,54 @@ export class AuthStore implements AuthStoreContract {
     return this.status === 'authenticated' && Boolean(this.user);
   }
 
-  private clearTokenCountdown() {
-    if (this.tokenCountdownInterval) {
-      clearInterval(this.tokenCountdownInterval);
-      this.tokenCountdownInterval = null;
+  private loadStoredAccessToken() {
+    if (typeof window === 'undefined') {
+      return null;
+    }
+
+    try {
+      return window.localStorage.getItem(AuthStore.ACCESS_TOKEN_KEY)?.trim() || null;
+    } catch {
+      return null;
     }
   }
 
-  private logTokenSnapshot(reason: string) {
-    if (!this.accessToken || !this.accessTokenExpiresAt) {
+  private writeStoredAccessToken(accessToken: string | null) {
+    if (typeof window === 'undefined') {
       return;
     }
 
-    const expiresAtMs = new Date(this.accessTokenExpiresAt).getTime();
-    if (!Number.isFinite(expiresAtMs)) {
-      console.log('[auth] access token snapshot', {
-        reason,
-        accessToken: this.accessToken,
-        accessTokenExpiresAt: this.accessTokenExpiresAt,
-      });
-      return;
+    try {
+      if (accessToken) {
+        window.localStorage.setItem(AuthStore.ACCESS_TOKEN_KEY, accessToken);
+      } else {
+        window.localStorage.removeItem(AuthStore.ACCESS_TOKEN_KEY);
+      }
+    } catch {
+      // ignore storage write errors
     }
-
-    console.log('[auth] access token snapshot', {
-      reason,
-      accessToken: this.accessToken,
-      accessTokenExpiresAt: this.accessTokenExpiresAt,
-      remaining: formatCountdown(expiresAtMs - Date.now()),
-    });
   }
 
-  private startTokenCountdown(reason: string) {
-    this.clearTokenCountdown();
-
-    if (!this.accessToken || !this.accessTokenExpiresAt) {
+  private clearStoredAccessTokens() {
+    if (typeof window === 'undefined') {
       return;
     }
 
-    this.logTokenSnapshot(reason);
+    try {
+      window.localStorage.removeItem(AuthStore.ACCESS_TOKEN_KEY);
+    } catch {
+      // ignore storage errors
+    }
+  }
 
-    this.tokenCountdownInterval = setInterval(() => {
-      if (!this.accessToken || !this.accessTokenExpiresAt) {
-        this.clearTokenCountdown();
-        return;
-      }
+  private initializeFromStorage() {
+    const storedAccessToken = this.loadStoredAccessToken();
 
-      const expiresAtMs = new Date(this.accessTokenExpiresAt).getTime();
-      if (!Number.isFinite(expiresAtMs)) {
-        console.log('[auth] access token countdown reset', {
-          accessToken: this.accessToken,
-          accessTokenExpiresAt: this.accessTokenExpiresAt,
-        });
-        this.clearTokenCountdown();
-        return;
-      }
-
-      const remainingMs = expiresAtMs - Date.now();
-      if (remainingMs <= 0) {
-        console.log('[auth] access token expired', {
-          accessToken: this.accessToken,
-          accessTokenExpiresAt: this.accessTokenExpiresAt,
-        });
-        this.clearTokenCountdown();
-        return;
-      }
-
-      console.log('[auth] access token countdown', {
-        remaining: formatCountdown(remainingMs),
+    if (storedAccessToken) {
+      runInAction(() => {
+        this.accessToken = storedAccessToken;
       });
-    }, 1000);
+    }
   }
 
   private applySession(session: AuthSessionResponse, reason: string, resetApp = true) {
@@ -129,45 +102,72 @@ export class AuthStore implements AuthStoreContract {
       this.status = 'authenticated';
       this.errorMessage = null;
       this.accessToken = session.accessToken;
-      this.accessTokenExpiresAt = session.accessTokenExpiresAt;
     });
 
-    this.startTokenCountdown(reason);
+    this.writeStoredAccessToken(session.accessToken);
+    console.log('[auth] applied session', { reason, accessToken: session.accessToken });
   }
 
   private clearSessionState() {
-    this.clearTokenCountdown();
+    this.clearStoredAccessTokens();
 
     runInAction(() => {
       this.user = null;
       this.accessToken = null;
-      this.accessTokenExpiresAt = null;
       this.errorMessage = null;
     });
   }
 
+  resetExpiryModal() {
+    this.hasShownExpiryModal = false;
+    isShowingExpiryModal = false;
+  }
+
   markUnauthenticated(error?: unknown) {
     const reason = typeof error === 'string' ? error : 'unauthorized';
+
     const previousToken = this.accessToken;
-    const previousExpiresAt = this.accessTokenExpiresAt;
     this.clearSessionState();
 
     runInAction(() => {
       this.status = 'unauthenticated';
     });
 
-    console.log(`[auth] access token ${reason}`, {
+    console.log('[auth] access token expired or invalid', {
+      reason,
       accessToken: previousToken,
-      accessTokenExpiresAt: previousExpiresAt,
     });
 
     appStore.reset();
+
+    const currentPath = typeof window !== 'undefined' ? window.location.pathname : '';
+    const isAuthEntryPage = currentPath === '/login' || currentPath === '/register';
+    if (reason === 'logout' || isShowingExpiryModal || reason === 'bootstrap_401' || isAuthEntryPage) return;
+
+    isShowingExpiryModal = true;
+    Modal.destroyAll(); // đóng hết modal cũ nếu có
+
+    Modal.confirm({
+      title: 'Phiên đăng nhập đã hết hạn',
+      content: 'Phiên đăng nhập đã hết hạn. Nhấn xác nhận để rời đi.',
+      okText: 'Xác nhận',
+      cancelText: 'Hủy',
+      onOk: () => {
+        isShowingExpiryModal = false;
+        window.location.href = '/login';
+      },
+      onCancel: () => {
+        isShowingExpiryModal = false;
+      },
+    });
   }
 
   async bootstrap() {
     if (this.bootstrapPromise) {
       return this.bootstrapPromise;
     }
+
+    this.initializeFromStorage();
 
     runInAction(() => {
       this.status = 'checking';

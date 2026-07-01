@@ -57,7 +57,7 @@ export class PlayerStore implements PlayerStoreContract {
       })
       .catch((error: unknown) => {
         runInAction(() => {
-          this.playersError = formatStoreError(error, 'KhÃ´ng táº£i Ä‘Æ°á»£c danh sÃ¡ch cáº§u thá»§.');
+          this.playersError = formatStoreError(error, 'Không thể lấy danh sách người choi.');
         });
 
         throw error;
@@ -117,7 +117,7 @@ export class PlayerStore implements PlayerStoreContract {
       })
       .catch((error: unknown) => {
         runInAction(() => {
-          this.teamLineupErrors.set(normalized, formatStoreError(error, `KhÃ´ng táº£i Ä‘Æ°á»£c Ä‘á»™i hÃ¬nh cá»§a ${teamName}.`));
+          this.teamLineupErrors.set(normalized, formatStoreError(error, `Không thể tải đội hình củ  a ${teamName}.`));
         });
 
         throw error;

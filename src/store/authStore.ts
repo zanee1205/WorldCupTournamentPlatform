@@ -7,6 +7,7 @@ import {
   getAuthSession,
   login as loginApi,
   logout as logoutApi,
+  refreshAuthSession,
   updateMyProfile as updateMyProfileApi,
   register as registerApi,
   setUnauthorizedHandler,
@@ -26,6 +27,7 @@ export class AuthStore implements AuthStoreContract {
   errorMessage: string | null = null;
   bootstrapPromise: Promise<AuthUser | null> | null = null;
   private hasShownExpiryModal = false;
+  private expiryTimeoutId: number | null = null;
 
   constructor() {
     makeAutoObservable(
@@ -82,6 +84,17 @@ export class AuthStore implements AuthStoreContract {
     }
   }
 
+  private clearExpiryTimer() {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    if (this.expiryTimeoutId !== null) {
+      window.clearTimeout(this.expiryTimeoutId);
+      this.expiryTimeoutId = null;
+    }
+  }
+
   private initializeFromStorage() {
     const storedAccessToken = this.loadStoredAccessToken();
 
@@ -105,11 +118,65 @@ export class AuthStore implements AuthStoreContract {
     });
 
     this.writeStoredAccessToken(session.accessToken);
+    this.scheduleExpiryCheck(session.accessToken);
     console.log('[auth] applied session', { reason, accessToken: session.accessToken });
+  }
+
+  private normalizeBase64Url(value: string) {
+    let normalized = value.replace(/-/g, '+').replace(/_/g, '/');
+    const paddingNeeded = 4 - (normalized.length % 4);
+    if (paddingNeeded > 0 && paddingNeeded < 4) {
+      normalized += '='.repeat(paddingNeeded);
+    }
+    return normalized;
+  }
+
+  private parseJwtExpiry(token: string): number | null {
+    try {
+      const payloadBase64 = token.split('.')[1];
+      if (!payloadBase64) return null;
+      const payloadJson = atob(this.normalizeBase64Url(payloadBase64));
+      const payload = JSON.parse(payloadJson) as { exp?: number };
+      return typeof payload.exp === 'number' ? payload.exp * 1000 : null;
+    } catch {
+      return null;
+    }
+  }
+
+  private scheduleExpiryCheck(accessToken: string) {
+    this.clearExpiryTimer();
+
+    const expiryMs = this.parseJwtExpiry(accessToken);
+    if (!expiryMs) return;
+
+    const refreshAt = expiryMs - Date.now() - 5_000;
+    const timeoutMs = Math.max(0, refreshAt);
+
+    if (timeoutMs <= 0) {
+      void this.handleAccessTokenExpiry();
+      return;
+    }
+
+    this.expiryTimeoutId = window.setTimeout(() => {
+      void this.handleAccessTokenExpiry();
+    }, timeoutMs);
+  }
+
+  private async handleAccessTokenExpiry() {
+    try {
+      console.log('[auth] access token expired, attempting refresh');
+      const session = await refreshAuthSession();
+      this.applySession(session, 'refresh', false);
+      console.log('[auth] token refreshed successfully');
+    } catch (error) {
+      console.warn('[auth] refresh failed, marking unauthenticated', error);
+      this.markUnauthenticated('refresh_failed');
+    }
   }
 
   private clearSessionState() {
     this.clearStoredAccessTokens();
+    this.clearExpiryTimer();
 
     runInAction(() => {
       this.user = null;

@@ -34,7 +34,7 @@ export function AppErrorState({
                             void refreshApp();
                         }}
                     >
-                        Thá»­ láº¡i
+                        Thử lại
                     </Button>
                 }
             />

@@ -28,17 +28,27 @@ export const AppHeader = observer(function AppHeader() {
     .join('') || 'U';
 
   const accountMenuItems = useMemo<MenuProps['items']>(
-    () => [
-      { key: 'home', label: 'Homepage' },
-      { key: 'leaderboard', label: 'Leaderboard' },
-      { key: 'list', label: 'Player list' },
-      { key: 'dashboard', label: 'Dashboard' },
-      { key: 'matches', label: 'Matches' },
-      { key: 'profile', label: 'Your Profile' },
-      { type: 'divider' },
-      { key: 'logout', danger: true, label: 'Đăng xuất' },
-    ],
-    [],
+    () => {
+      const items: MenuProps['items'] = [
+        { key: 'home', label: 'Homepage' },
+        { key: 'leaderboard', label: 'Leaderboard' },
+        { key: 'list', label: 'Player list' },
+        { key: 'dashboard', label: 'Dashboard' },
+        { key: 'matches', label: 'Matches' },
+      ];
+
+      if (authStore.user?.role === 'user') {
+        items.push({ type: 'divider' }, { key: 'passwordChange', label: 'Đổi mật khẩu' });
+      }
+
+      if (authStore.user?.role === 'admin') {
+        items.push({ type: 'divider' }, { key: 'admin', label: 'Trang quản trị' });
+      }
+
+      items.push({ key: 'profile', label: 'Your Profile' }, { type: 'divider' }, { key: 'logout', danger: true, label: 'Đăng xuất' });
+      return items;
+    },
+    [authStore.user?.role],
   );
 
   const handleAccountMenuClick: MenuProps['onClick'] = ({ key }) => {
@@ -53,6 +63,8 @@ export const AppHeader = observer(function AppHeader() {
       list: '/list',
       dashboard: '/dashboard',
       matches: '/matches',
+      passwordChange: '/password-changing',
+      admin: '/admin',
       profile: '/profile',
     };
 

@@ -1,4 +1,4 @@
-import type { OpenFootballMatch } from './worldcupMatchCore';
+import type { OpenFootballMatch } from './worldcupMatchCore.js';
 
 export type OpenFootballJson = {
     stage?: Record<string, OpenFootballMatch[]>;

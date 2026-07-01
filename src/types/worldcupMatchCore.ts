@@ -1,5 +1,5 @@
-import { OpenFootballGoal } from "./worldCupGoal";
-import { OpenFootballScore } from "./openFootballScore";
+import { OpenFootballGoal } from "./worldCupGoal.js";
+import { OpenFootballScore } from "./openFootballScore.js";
 
 export type WorldCupMatchCore = {
     num?: number;

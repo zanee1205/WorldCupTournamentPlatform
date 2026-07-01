@@ -5,8 +5,11 @@ export interface AuthUser {
   avatar?: string | null;
   fullName?: string | null;
   phoneNumber?: string | null;
+  role: 'user' | 'admin';
   createdAt?: string;
   updatedAt?: string;
+  failedLoginAttempts: number;
+  lockedUntil?: string | null;
 }
 
 export interface AuthSessionResponse {

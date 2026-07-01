@@ -5,8 +5,7 @@ import express from 'express';
 
 import aiRouter from './routes/ai.js';
 import highlightRouter from './routes/highlightRouter.js';
-import { requireAuth } from '../authentication/auth.js';
-
+import { requireAuth, ensureAdminUser } from '../authentication/auth.js';
 import { createApp } from './app.js';
 import { createRepository } from './store.js';
 
@@ -14,6 +13,7 @@ const port = Number(process.env.PORT ?? 4000);
 
 async function bootstrap() {
   const repository = await createRepository();
+  await ensureAdminUser();
   const app = createApp(repository);
 
   app.use('/api/ai', requireAuth, aiRouter);

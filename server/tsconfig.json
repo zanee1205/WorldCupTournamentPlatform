@@ -14,5 +14,5 @@
     "outDir": "../dist/server",
     "noEmit": false
   },
-  "include": ["src/**/*.ts", "../shared/**/*.ts", "src/services/staticsService.ts", "src/services/highlightVideoService.ts", "../src/types/dashboardPageProps.ts", "../src/types/dashboardSummary.ts", "../src/types/matchstage.ts", "../src/types/message.ts", "../src/types/paginationstate.ts", "../src/types/playerListItem.ts", "../src/types/scoreLedgerEntry.ts", "authentication/auth.ts"]
+  "include": ["src/**/*.ts", "../shared/**/*.ts", "src/services/staticsService.ts", "src/services/highlightVideoService.ts", "../src/types/**/*.ts", "authentication/**/*.ts"]
 }

@@ -5,6 +5,7 @@ export interface UserDocument {
     avatar?: string | null;
     fullName?: string | null;
     phoneNumber?: string | null;
+    role: 'user' | 'admin';
     createdAt?: Date;
     updatedAt?: Date;
     failedLoginAttempts: number;

@@ -1,0 +1,43 @@
+.featureCard {
+    background: linear-gradient(135deg, #7c7c7e, #23202b) !important;
+    border: none !important;
+    border-radius: 12px !important;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
+    cursor: pointer;
+
+    &::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 60%;
+        height: 100%;
+        background: linear-gradient(120deg,
+                transparent 0%,
+                rgba(255, 255, 255, 0.35) 50%,
+                transparent 100%);
+        transition: left 0.5s ease;
+    }
+
+    &:hover {
+        background: linear-gradient(135deg, #4c4d56, #a29fab) !important;
+        box-shadow: 0 6px 24px rgba(99, 102, 241, 0.35);
+        transform: translateY(-4px);
+        z-index: 1;
+
+        &::after {
+            left: 150%;
+        }
+
+        :global(.ant-card-body) {
+            background: transparent !important;
+        }
+    }
+
+    :global(.ant-card-body) {
+        background: transparent !important;
+        padding: 24px !important;
+    }
+}

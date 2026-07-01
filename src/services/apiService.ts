@@ -1,6 +1,7 @@
 import axios from 'axios';
 
-import type { AuthLoginInput, AuthProfileUpdateInput, AuthRegisterInput, AuthSessionResponse } from '../types/auth.ts';
+import type { AuthLoginInput, AuthProfileUpdateInput, AuthRegisterInput, AuthSessionResponse, AuthUser } from '../types/auth.ts';
+import type { AdminDashboardResponse, AdminPasswordChangeRequest, AdminUnlockRequest, AdminUser } from '../types/admin.ts';
 import type { DashboardResponse } from '../../server/src/types/dashboardResponse.ts';
 import type { DashboardHomeResponse } from '../../server/src/types/dashboardHomeResponse.ts';
 import type { DashboardLeaderboardResponse } from '../../server/src/types/dashboardLeaderboardResponse.ts';
@@ -92,19 +93,62 @@ export function setUnauthorizedHandler(handler: UnauthorizedHandler) {
   unauthorizedHandler = handler;
 }
 
+let refreshingPromise: Promise<string | null> | null = null;
+
+async function refreshAuthToken() {
+  if (refreshingPromise) {
+    return refreshingPromise;
+  }
+
+  refreshingPromise = http
+    .post<AuthSessionResponse>('/auth/refreshNewToken', undefined, { skipUnauthorizedHandler: true } as HttpRequestConfig)
+    .then((response) => {
+      const accessToken = (response.data as AuthSessionResponse).accessToken;
+      if (accessToken) {
+        setStoredAccessToken(accessToken);
+        console.log('[auth] refreshed access token from /auth/refreshNewToken', accessToken);
+      }
+      return accessToken;
+    })
+    .catch((error) => {
+      setStoredAccessToken(null);
+      throw error;
+    })
+    .finally(() => {
+      refreshingPromise = null;
+    });
+
+  return refreshingPromise;
+}
+
 http.interceptors.response.use(
   (response) => {
     const updatedAccessToken = response.headers['x-access-token'];
     if (updatedAccessToken && typeof updatedAccessToken === 'string') {
       setStoredAccessToken(updatedAccessToken);
-      console.log('[auth] refreshed access token from response header');
+      console.log('[auth] refreshed access token from response header', updatedAccessToken);
     }
     return response;
   },
-  (error) => {
-    if (axios.isAxiosError(error) && (error.response?.status === 401 || error.response?.status === 423)) {
+  async (error) => {
+    if (axios.isAxiosError(error)) {
       const config = error.config as HttpRequestConfig | undefined;
-      if (!config?.skipUnauthorizedHandler) {
+      const isRefreshRequest = config?.url?.includes('/auth/refreshNewToken');
+
+      if (error.response?.status === 401 && !config?.skipUnauthorizedHandler && !isRefreshRequest) {
+        try {
+          const newToken = await refreshAuthToken();
+          if (newToken && config) {
+            config.headers = config.headers ?? {};
+            config.headers.Authorization = `Bearer ${newToken}`;
+            return http(config);
+          }
+        } catch {
+          // refresh failed, fall through to unauthorized handling
+        }
+      }
+
+      if ((error.response?.status === 401 || error.response?.status === 423 || error.response?.status === 403) && !config?.skipUnauthorizedHandler) {
         unauthorizedHandler?.(error);
       }
     }
@@ -123,8 +167,80 @@ export async function refreshWorldcupFeed() {
   return response.data;
 }
 
+export async function getAdminUsers() {
+  const response = await http.get<{ users: AdminUser[]; count: number }>('/auth/admin/users');
+  return response.data;
+}
+
+export async function getAdminDashboard() {
+  const response = await http.get<AdminDashboardResponse>('/auth/admin/dashboard');
+  return response.data;
+}
+
+export async function createPasswordChangeRequest(payload: { newPassword: string; reason?: string }) {
+  const response = await http.post('/auth/password-change-requests', payload);
+  return response.data;
+}
+
+export async function getPasswordChangeRequests() {
+  const response = await http.get<{ requests: AdminPasswordChangeRequest[] }>('/auth/admin/password-change-requests');
+  return response.data;
+}
+
+export async function approvePasswordChangeRequest(requestId: string) {
+  const response = await http.patch(`/auth/admin/password-change-requests/${encodeURIComponent(requestId)}/approve`);
+  return response.data;
+}
+
+export async function rejectPasswordChangeRequest(requestId: string) {
+  const response = await http.patch(`/auth/admin/password-change-requests/${encodeURIComponent(requestId)}/reject`);
+  return response.data;
+}
+
+export async function createUnlockRequest(payload: { identifier: string; reason?: string }) {
+  const response = await http.post('/auth/unlock-requests', payload);
+  return response.data;
+}
+
+export async function getUnlockRequests() {
+  const response = await http.get<{ requests: AdminUnlockRequest[] }>('/auth/admin/unlock-requests');
+  return response.data;
+}
+
+export async function approveUnlockRequest(requestId: string) {
+  const response = await http.patch(`/auth/admin/unlock-requests/${encodeURIComponent(requestId)}/approve`);
+  return response.data;
+}
+
+export async function rejectUnlockRequest(requestId: string) {
+  const response = await http.patch(`/auth/admin/unlock-requests/${encodeURIComponent(requestId)}/reject`);
+  return response.data;
+}
+
+export async function lockAdminUser(userId: string) {
+  const response = await http.patch(`/auth/admin/users/${encodeURIComponent(userId)}/lock`);
+  return response.data;
+}
+
+export async function unlockAdminUser(userId: string) {
+  const response = await http.patch(`/auth/admin/users/${encodeURIComponent(userId)}/unlock`);
+  return response.data;
+}
+
+export async function deleteAdminUser(userId: string) {
+  const response = await http.delete(`/auth/admin/users/${encodeURIComponent(userId)}`);
+  return response.data;
+}
+
 export async function getAuthSession(config?: HttpRequestConfig) {
   const response = await http.get<AuthSessionResponse>('/auth/me', config);
+  return response.data;
+}
+
+export async function refreshAuthSession() {
+  const response = await http.post<AuthSessionResponse>('/auth/refreshNewToken', undefined, {
+    skipUnauthorizedHandler: true,
+  } as HttpRequestConfig);
   return response.data;
 }
 

@@ -1,7 +1,7 @@
 import cors from 'cors';
 import express from 'express';
 
-import { createAuthRouter, requireAuth } from '../authentication/auth.js';
+import { createAuthRouter, requireAuth, requireRole } from '../authentication/auth.js';
 import type { TournamentRepository } from './store.js';
 
 export function createApp(repository: TournamentRepository) {
@@ -18,25 +18,61 @@ export function createApp(repository: TournamentRepository) {
   const allowedOriginsEnv = String(process.env.ALLOWED_ORIGINS || 'https://world-cup-tournament-platform.vercel.app,http://localhost:5173');
   const allowedOrigins = allowedOriginsEnv.split(',').map((s) => s.trim()).filter(Boolean);
 
+  function isOriginAllowed(origin?: string) {
+    if (!origin) return false;
+    if (allowedOrigins.includes('*')) return true;
+    if (allowedOrigins.includes(origin)) return true;
+
+    try {
+      const url = new URL(origin);
+      if (url.hostname.endsWith('.vercel.app')) return true;
+      if (url.hostname === 'localhost' || url.hostname === '127.0.0.1') return true;
+      if (allowedOrigins.includes(url.origin)) return true;
+    } catch {
+      return false; 
+    }
+
+    return false;
+  }
+
   app.use(cors({
     origin(origin, callback) {
-      if (!origin) return callback(null, true);
-      if (allowedOrigins.includes(origin)) return callback(null, true);
-      if (allowedOrigins.includes('*')) return callback(null, true);
-
-      try {
-        const url = new URL(origin);
-        if (url.hostname.endsWith('.vercel.app')) return callback(null, true);
-      } catch {
-        // ignore parse errors and fall through to rejection
+      if (!origin) {
+        return callback(null, true);
       }
-
-      return callback(new Error('Not allowed by CORS'));
+      return isOriginAllowed(origin) ? callback(null, true) : callback(null, false);
     },
     credentials: true,
     exposedHeaders: ['x-access-token'],
   }));
   app.use(express.json({ limit: '2mb' }));
+
+  app.use((req, res, next) => {
+    if (!req.path.startsWith('/api/')) {
+      return next();
+    }
+
+    const requestOrigin = (() => {
+      if (typeof req.headers.origin === 'string' && req.headers.origin.trim()) {
+        return req.headers.origin;
+      }
+      if (typeof req.headers.referer === 'string' && req.headers.referer.trim()) {
+        try {
+          return new URL(req.headers.referer).origin;
+        } catch {
+          return '';
+        }
+      }
+      return '';
+    })();
+
+    if (!isOriginAllowed(requestOrigin)) {
+      res.status(403).json({ message: 'Forbidden API access' });
+      return;
+    }
+
+    next();
+  });
 
   app.get('/api/health', (_request, response) => {
     response.json({ ok: true });
@@ -47,35 +83,38 @@ export function createApp(repository: TournamentRepository) {
   const protectedApi = express.Router();
   protectedApi.use(requireAuth);
 
-  protectedApi.get('/dashboard', async (_request, response) => {
+  const userApi = express.Router();
+  userApi.use(requireAuth, requireRole('user'));
+
+  userApi.get('/dashboard', async (_request, response) => {
     response.json(await repository.getDashboard(currentUserId(response)));
   });
 
-  protectedApi.get('/dashboard/shell', async (_request, response) => {
+  userApi.get('/dashboard/shell', async (_request, response) => {
     response.json(await repository.getDashboardShell(currentUserId(response)));
   });
 
-  protectedApi.get('/dashboard/home', async (_request, response) => {
+  userApi.get('/dashboard/home', async (_request, response) => {
     response.json(await repository.getDashboardHome(currentUserId(response)));
   });
 
-  protectedApi.get('/dashboard/leaderboard', async (_request, response) => {
+  userApi.get('/dashboard/leaderboard', async (_request, response) => {
     response.json(await repository.getDashboardLeaderboard(currentUserId(response)));
   });
 
-  protectedApi.get('/dashboard/matches', async (_request, response) => {
+  userApi.get('/dashboard/matches', async (_request, response) => {
     response.json(await repository.getDashboardMatches(currentUserId(response)));
   });
 
-  protectedApi.get('/dashboard/stats', async (_request, response) => {
+  userApi.get('/dashboard/stats', async (_request, response) => {
     response.json(await repository.getDashboardStats(currentUserId(response)));
   });
 
-  protectedApi.get('/matches', async (_request, response) => {
+  userApi.get('/matches', async (_request, response) => {
     response.json(await repository.listMatchesForUser(currentUserId(response)));
   });
 
-  protectedApi.get('/players', async (_request, response) => {
+  userApi.get('/players', async (_request, response) => {
     try {
       response.json(await repository.listPlayers());
     } catch (error) {
@@ -84,7 +123,7 @@ export function createApp(repository: TournamentRepository) {
     }
   });
 
-  protectedApi.get('/teams/:teamName/lineup', async (request, response) => {
+  userApi.get('/teams/:teamName/lineup', async (request, response) => {
     try {
       const teamName = decodeURIComponent(String(request.params.teamName || ''));
       response.json(await repository.getTeamLineup(teamName));
@@ -119,7 +158,7 @@ export function createApp(repository: TournamentRepository) {
     }
   });
 
-  protectedApi.patch('/matches/:id/prediction', async (request, response) => {
+  userApi.patch('/matches/:id/prediction', async (request, response) => {
     try {
       const id = Number(request.params.id);
       const predictedHomeScore = Number(request.body?.predictedHomeScore);
@@ -154,6 +193,7 @@ export function createApp(repository: TournamentRepository) {
     }
   });
 
+  app.use('/api', userApi);
   app.use('/api', protectedApi);
 
   return app;

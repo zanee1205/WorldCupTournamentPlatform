@@ -1,0 +1,133 @@
+.managingAccountPage {
+    min-height: calc(100vh - 88px);
+}
+
+.headerBlock {
+    margin-bottom: 24px;
+}
+
+.pageTitle {
+    margin: 0 !important;
+    color: #ffffff !important;
+}
+
+.pageDescription {
+    color: rgba(226, 232, 240, 0.78) !important;
+    max-width: 860px;
+}
+
+.summaryCard {
+    border-radius: 18px !important;
+    background: rgba(15, 23, 42, 0.92) !important;
+    border: 1px solid rgba(148, 163, 184, 0.14) !important;
+    margin-bottom: 24px;
+}
+
+.summaryGrid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 18px;
+}
+
+.summaryLabel {
+    display: block;
+    color: rgba(226, 232, 240, 0.62) !important;
+    font-size: 13px;
+    margin-bottom: 6px;
+}
+
+.summaryValue {
+    margin: 0 !important;
+    color: #ffffff !important;
+}
+
+.tableCard {
+    background: rgba(15, 23, 42, 0.92) !important;
+    border: 1px solid rgba(148, 163, 184, 0.14) !important;
+    border-radius: 18px !important;
+    
+    :global(.ant-table) {
+        background: transparent !important;
+    }
+
+    :global(.ant-table-thead > tr > th) {
+        background: rgba(255, 255, 255, 0.04) !important;
+        color: rgba(255, 255, 255, 0.85) !important;
+        border-bottom: 1px solid rgba(148, 163, 184, 0.18) !important;
+        font-weight: 600;
+    }
+
+    :global(.ant-table-thead > tr > th::before) {
+        background: transparent !important;
+    }
+
+    :global(.ant-table-tbody > tr > td) {
+        background: transparent !important;
+        color: rgba(255, 255, 255, 0.85) !important;
+        border-bottom: 1px solid rgba(148, 163, 184, 0.1) !important;
+    }
+
+    :global(.ant-table-tbody > tr:hover > td) {
+        background: rgba(255, 255, 255, 0.06) !important;
+    }
+
+    :global(.ant-table-cell-fix-left),
+    :global(.ant-table-cell-fix-right) {
+        background: rgba(15, 23, 42, 0.98) !important;
+    }
+
+    :global(.ant-empty-description) {
+        color: rgba(255, 255, 255, 0.5) !important;
+    }
+
+    :global(.ant-spin-container) {
+        background: transparent !important;
+    }
+
+    // ----- Pagination -----
+    :global(.ant-pagination .ant-pagination-item) {
+        background: transparent !important;
+        border-color: rgba(148, 163, 184, 0.2) !important;
+    }
+
+    :global(.ant-pagination .ant-pagination-item a) {
+        color: rgba(255, 255, 255, 0.75) !important;
+    }
+
+    :global(.ant-pagination .ant-pagination-item-active) {
+        background: #6366f1 !important;
+        border-color: #6366f1 !important;
+    }
+
+    :global(.ant-pagination .ant-pagination-item-active a) {
+        color: #fff !important;
+    }
+
+    :global(.ant-pagination .ant-pagination-prev .ant-pagination-item-link),
+    :global(.ant-pagination .ant-pagination-next .ant-pagination-item-link) {
+        color: rgba(255, 255, 255, 0.75) !important;
+        background: transparent !important;
+        border-color: rgba(148, 163, 184, 0.2) !important;
+    }
+
+    :global(.ant-pagination-options-quick-jumper input),
+    :global(.ant-select-selector) {
+        background: rgba(255, 255, 255, 0.05) !important;
+        border-color: rgba(148, 163, 184, 0.2) !important;
+        color: rgba(255, 255, 255, 0.85) !important;
+    }
+}
+
+:global(.ant-table-thead > tr > th) {
+    background: rgba(255, 255, 255, 0.06) !important;
+    color: rgba(255, 255, 255, 0.88) !important;
+}
+
+:global(.ant-table-tbody > tr > td) {
+    background: rgba(255, 255, 255, 0.02) !important;
+    color: rgba(255, 255, 255, 0.82) !important;
+}
+
+:global(.ant-table-tbody > tr:hover > td) {
+    background: rgba(255, 255, 255, 0.08) !important;
+}

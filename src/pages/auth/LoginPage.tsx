@@ -3,6 +3,7 @@ import { Button, Card, Form, Input, Typography, message, Modal } from 'antd';
 import { Link, useNavigate } from 'react-router-dom';
 
 import { authStore } from '../../store/authStore.ts';
+import { createUnlockRequest } from '../../services/apiService.ts';
 import styles from './AuthPage.module.scss';
 import { isAxiosError } from 'axios';
 
@@ -50,18 +51,102 @@ export function LoginPage() {
   const [submitting, setSubmitting] = useState(false);
   const [failedInfo, setFailedInfo] = useState<{ failedAttempts?: number; remainingAttempts?: number } | null>(null);
   const [lockedUntil, setLockedUntil] = useState<Date | null>(null);
+  const [lockType, setLockType] = useState<'temporary' | 'permanent' | null>(null);
+  const [unlockRequestIdentifier, setUnlockRequestIdentifier] = useState('');
+  const [unlockRequestReason, setUnlockRequestReason] = useState('');
+  const [unlockRequestSubmitting, setUnlockRequestSubmitting] = useState(false);
+  const [unlockRequestSent, setUnlockRequestSent] = useState(false);
+
+  const isPermanentLock = lockType === 'permanent';
+  const isLockModalOpen = lockedUntil !== null;
+
+  const resetLockModal = () => {
+    setLockedUntil(null);
+    setLockType(null);
+    setUnlockRequestReason('');
+    setUnlockRequestIdentifier('');
+    setUnlockRequestSent(false);
+  };
+
+  const handleSendUnlockRequest = async () => {
+    if (!unlockRequestIdentifier) {
+      message.error('Không xác định được tài khoản cần mở khóa.');
+      return;
+    }
+
+    setUnlockRequestSubmitting(true);
+    try {
+      await createUnlockRequest({ identifier: unlockRequestIdentifier, reason: unlockRequestReason });
+      setUnlockRequestSent(true);
+      message.success('Yêu cầu mở khóa đã được gửi. Admin sẽ xem xét.');
+    } catch (error) {
+      if (isAxiosError(error) && error.response?.data?.message) {
+        message.error(error.response.data.message);
+      } else {
+        message.error('Không thể gửi yêu cầu mở khóa.');
+      }
+    } finally {
+      setUnlockRequestSubmitting(false);
+    }
+  };
 
   return (
     <>
       <Modal
-        open={lockedUntil !== null}
-        title="Tài khoản bị khóa"
-        okText="Đóng"
-        cancelButtonProps={{ style: { display: 'none' } }}
-        onOk={() => setLockedUntil(null)}
-        onCancel={() => setLockedUntil(null)}
+        open={isLockModalOpen}
+        title={isPermanentLock ? 'Tài khoản bị vô hiệu hóa' : 'Tài khoản bị khóa'}
+        onCancel={resetLockModal}
+        footer={
+          isPermanentLock
+            ? [
+              <Button key="close" onClick={resetLockModal}>
+                Đóng
+              </Button>,
+              <Button
+                key="submit"
+                type="primary"
+                loading={unlockRequestSubmitting}
+                disabled={unlockRequestSent}
+                onClick={handleSendUnlockRequest}
+              >
+                {unlockRequestSent ? 'Đã gửi yêu cầu' : 'Gửi yêu cầu mở khóa'}
+              </Button>,
+            ]
+            : [
+              <Button key="close" type="primary" onClick={resetLockModal}>
+                Đóng
+              </Button>,
+            ]
+        }
       >
-        <LockCountdown until={lockedUntil} />
+        {isPermanentLock ? (
+          <>
+            <Typography.Paragraph>
+              Tài khoản của bạn đã bị vô hiệu hóa. Vui lòng gửi yêu cầu mở khóa để Admin xem xét.
+            </Typography.Paragraph>
+            <Form layout="vertical">
+              <Form.Item label="Tài khoản" required>
+                <Input value={unlockRequestIdentifier} disabled />
+              </Form.Item>
+              <Form.Item label="Lý do mở khóa (tùy chọn)" help="Admin sẽ dựa vào lý do này khi xét duyệt">
+                <Input.TextArea
+                  rows={4}
+                  value={unlockRequestReason}
+                  onChange={(event) => setUnlockRequestReason(event.target.value)}
+                  placeholder="Nhập lý do yêu cầu mở khóa..."
+                  disabled={unlockRequestSent}
+                />
+              </Form.Item>
+              {unlockRequestSent ? (
+                <Typography.Paragraph type="success">
+                  Yêu cầu mở khóa đã được gửi. Vui lòng chờ Admin phê duyệt.
+                </Typography.Paragraph>
+              ) : null}
+            </Form>
+          </>
+        ) : (
+          <LockCountdown until={lockedUntil} />
+        )}
       </Modal>
 
       <div className={styles.authPage}>
@@ -80,9 +165,13 @@ export function LoginPage() {
             onFinish={async (values) => {
               setSubmitting(true);
               try {
-                await authStore.login(values);
+                const user = await authStore.login(values);
                 message.success('Đăng nhập thành công.');
-                navigate('/', { replace: true });
+                if (user?.role === 'admin') {
+                  navigate('/admin', { replace: true });
+                } else {
+                  navigate('/', { replace: true });
+                }
               } catch (error) {
                 if (isAxiosError(error) && error.response) {
                   const status = error.response.status;
@@ -99,8 +188,17 @@ export function LoginPage() {
                   } else if (status === 423) {
                     const data = error.response.data as any;
                     const locked = data?.lockedUntil ? new Date(data.lockedUntil) : null;
-                    message.error('Tài khoản bị khóa tạm thời.');
+                    const type = data?.lockType === 'permanent' ? 'permanent' : 'temporary';
                     setLockedUntil(locked);
+                    setLockType(type);
+                    if (type === 'permanent' && data?.allowUnlockRequest) {
+                      setUnlockRequestIdentifier(values.identifier.trim());
+                    }
+                    message.error(
+                      type === 'permanent'
+                        ? 'Tài khoản của bạn đã bị vô hiệu hóa. Vui lòng gửi yêu cầu mở khóa.'
+                        : 'Tài khoản bị khóa tạm thời.',
+                    );
                   } else {
                     message.error(getErrorMessage(error));
                   }

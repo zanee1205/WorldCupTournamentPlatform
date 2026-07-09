@@ -29,7 +29,7 @@ export function createApp(repository: TournamentRepository) {
       if (url.hostname === 'localhost' || url.hostname === '127.0.0.1') return true;
       if (allowedOrigins.includes(url.origin)) return true;
     } catch {
-      return false; 
+      return false;
     }
 
     return false;
@@ -46,33 +46,6 @@ export function createApp(repository: TournamentRepository) {
     exposedHeaders: ['x-access-token'],
   }));
   app.use(express.json({ limit: '2mb' }));
-
-  app.use((req, res, next) => {
-    if (!req.path.startsWith('/api/')) {
-      return next();
-    }
-
-    const requestOrigin = (() => {
-      if (typeof req.headers.origin === 'string' && req.headers.origin.trim()) {
-        return req.headers.origin;
-      }
-      if (typeof req.headers.referer === 'string' && req.headers.referer.trim()) {
-        try {
-          return new URL(req.headers.referer).origin;
-        } catch {
-          return '';
-        }
-      }
-      return '';
-    })();
-
-    if (!isOriginAllowed(requestOrigin)) {
-      res.status(403).json({ message: 'Forbidden API access' });
-      return;
-    }
-
-    next();
-  });
 
   app.get('/api/health', (_request, response) => {
     response.json({ ok: true });

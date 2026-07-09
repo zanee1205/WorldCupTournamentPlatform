@@ -3,10 +3,10 @@ import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { authStore } from '../../../store/authStore.ts';
-import { getAuthSession } from '../../../services/apiService.ts';
-import type { AuthUser } from '../../../types/auth.ts';
-import { AppLoadingState } from '../../../components/AppState/AppLoadingState.tsx';
+import { authStore } from '../../store/authStore.ts';
+import { getAuthSession } from '../../services/apiService.ts';
+import type { AuthUser } from '../../types/auth.ts';
+import { AppLoadingState } from '../../components/AppState/AppLoadingState.tsx';
 import styles from './ProfilePage.module.scss';
 
 function getInitials(value: string) {
